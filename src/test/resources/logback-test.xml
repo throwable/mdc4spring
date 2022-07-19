@@ -1,0 +1,39 @@
+<configuration>
+    <appender name="stdout" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>%-4r [%t] %5p %c{1} - %m%n</pattern>
+        </encoder>
+    </appender>
+    <appender name="jsonConsole" class="ch.qos.logback.core.ConsoleAppender">
+        <layout class="ch.qos.logback.contrib.json.classic.JsonLayout">
+            <jsonFormatter
+                    class="ch.qos.logback.contrib.jackson.JacksonJsonFormatter">
+                <prettyPrint>true</prettyPrint>
+            </jsonFormatter>
+            <timestampFormat>yyyy-MM-dd' 'HH:mm:ss.SSS</timestampFormat>
+        </layout>
+    </appender>
+    <!--<appender name="jsonFile" class="ch.qos.logback.core.FileAppender">
+        <file>json-tests.log</file>
+        <append>false</append>
+        &lt;!&ndash;<prudent>true</prudent>&ndash;&gt;
+        <immediateFlush>true</immediateFlush>
+        <layout class="ch.qos.logback.contrib.json.classic.JsonLayout">
+            <jsonFormatter
+                    class="ch.qos.logback.contrib.jackson.JacksonJsonFormatter">
+                <prettyPrint>true</prettyPrint>
+            </jsonFormatter>
+            <timestampFormat>yyyy-MM-dd' 'HH:mm:ss.SSS</timestampFormat>
+        </layout>
+    </appender>-->
+    <appender name="testAppender" class="com.github.throwable.mdc4spring.InMemoryLoggingEventsAppender"/>
+
+    <logger name="com.github.throwable.mdc4spring.spring.cmp" level="INFO">
+        <appender-ref ref="jsonConsole" />
+        <appender-ref ref="testAppender" />
+    </logger>
+
+    <root level="INFO">
+        <appender-ref ref="stdout" />
+    </root>
+</configuration>

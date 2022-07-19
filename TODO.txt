@@ -1,0 +1,3 @@
+[ ]
+// no @MDCScope on method: leave param in parent's scope???
+public void someMethod(@MDCParam param)
