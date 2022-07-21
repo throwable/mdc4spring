@@ -6,24 +6,24 @@ import com.github.throwable.mdc4spring.loggers.LoggingSubsystemResolver;
 import java.util.HashMap;
 
 // TODO: copy MDC traces to another context
-public class ScopedMDC implements AutoCloseable, MDC {
+public class CloseableMDC implements AutoCloseable, MDC {
 
-    private static final ThreadLocal<ScopedMDC> currentMdc = new ThreadLocal<>();
+    private static final ThreadLocal<CloseableMDC> currentMdc = new ThreadLocal<>();
     private static LoggerMDCAdapter loggerMDCAdapter = LoggingSubsystemResolver.resolveMDCAdapter();
 
-    private final ScopedMDC parent;
+    private final CloseableMDC parent;
     private final String keyPrefix;
     private HashMap<String, Object> mdcData;
 
 
-    private ScopedMDC(ScopedMDC parent, String namespace, String keyPrefix) {
+    private CloseableMDC(CloseableMDC parent, String namespace, String keyPrefix) {
         this.parent = parent;
         this.keyPrefix = keyPrefix;
         mdcData = new HashMap<>();
     }
 
-    static ScopedMDC current() throws IllegalStateException {
-        ScopedMDC mdc = currentMdc.get();
+    static CloseableMDC current() throws IllegalStateException {
+        CloseableMDC mdc = currentMdc.get();
         if (mdc == null)
             throw new IllegalStateException("No MDC was set for current execution scope");
         return mdc;
@@ -33,8 +33,8 @@ public class ScopedMDC implements AutoCloseable, MDC {
         return currentMdc.get() != null;
     }
 
-    static ScopedMDC root() throws IllegalStateException {
-        ScopedMDC mdc = current();
+    static CloseableMDC root() throws IllegalStateException {
+        CloseableMDC mdc = current();
         while (mdc.getParent() != null)
             mdc = mdc.getParent();
         return mdc;
@@ -48,23 +48,23 @@ public class ScopedMDC implements AutoCloseable, MDC {
         return loggerMDCAdapter;
     }
 
-    public ScopedMDC getParent() {
+    public CloseableMDC getParent() {
         return parent;
     }
 
-    public static ScopedMDC create() {
+    public static CloseableMDC create() {
         return create("");
     }
 
-    public static ScopedMDC create(String namespace) {
-        ScopedMDC current = currentMdc.get();
+    public static CloseableMDC create(String namespace) {
+        CloseableMDC current = currentMdc.get();
         String keyPrefix = current != null ? current.keyPrefix : "";
         String newKeyPrefix;
         if (namespace != null && !"".equals(namespace))
             newKeyPrefix = keyPrefix + namespace + ".";
         else
             newKeyPrefix = keyPrefix;
-        ScopedMDC mdc = new ScopedMDC(current, namespace, newKeyPrefix);
+        CloseableMDC mdc = new CloseableMDC(current, namespace, newKeyPrefix);
         currentMdc.set(mdc);
         return mdc;
     }
@@ -82,12 +82,13 @@ public class ScopedMDC implements AutoCloseable, MDC {
         mdcData = null;
     }
 
+    @SuppressWarnings("resource")
     public static void param(String key, Object val) {
         current().put(key, val);
     }
 
     // TODO: parent-child scope parameter clutching
-    public ScopedMDC put(String key, Object val) {
+    public CloseableMDC put(String key, Object val) {
         if (mdcData == null) throw new IllegalStateException("MDC is closed");
         if (key == null) throw new IllegalArgumentException("Key must not be null");
         mdcData.put(key, val);
@@ -101,7 +102,7 @@ public class ScopedMDC implements AutoCloseable, MDC {
         return mdcData.get(key);
     }
 
-    public ScopedMDC remove(String key) {
+    public CloseableMDC remove(String key) {
         if (mdcData == null) throw new IllegalStateException("MDC is closed");
         if (key == null) throw new IllegalArgumentException("Key must not be null");
         mdcData.remove(key);

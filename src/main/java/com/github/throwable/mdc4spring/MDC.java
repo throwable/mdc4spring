@@ -4,36 +4,36 @@ import com.github.throwable.mdc4spring.loggers.LoggerMDCAdapter;
 
 public interface MDC {
     static MDC current() {
-        return ScopedMDC.current();
+        return CloseableMDC.current();
     }
 
     static MDC root() {
-        return ScopedMDC.root();
+        return CloseableMDC.root();
     }
 
     static void setLoggerMDCAdapter(LoggerMDCAdapter loggerMDCAdapter) {
-        ScopedMDC.setLoggerMDCAdapter(loggerMDCAdapter);
+        CloseableMDC.setLoggerMDCAdapter(loggerMDCAdapter);
     }
     static LoggerMDCAdapter getLoggerMDCAdapter() {
-        return ScopedMDC.getLoggerMDCAdapter();
+        return CloseableMDC.getLoggerMDCAdapter();
     }
 
     static boolean hasCurrent() {
-        return ScopedMDC.hasCurrent();
+        return CloseableMDC.hasCurrent();
     }
 
     MDC getParent();
 
-    static ScopedMDC create() {
-        return ScopedMDC.create();
+    static CloseableMDC create() {
+        return CloseableMDC.create();
     }
 
-    static ScopedMDC create(String namespace) {
-        return ScopedMDC.create(namespace);
+    static CloseableMDC create(String namespace) {
+        return CloseableMDC.create(namespace);
     }
 
     static void param(String key, Object value) throws IllegalArgumentException, IllegalStateException {
-        ScopedMDC.param(key, value);
+        CloseableMDC.param(key, value);
     }
 
     // TODO: newMDC with lambda

@@ -28,15 +28,15 @@ public class TestMDCCore {
     }
 
     @Test
-    public void testMDCScopes() {
-        try (ScopedMDC mdc = MDC.create()
+    public void testManualMDCOperation() {
+        try (CloseableMDC mdc = MDC.create()
                 .put("property1", 1)
                 .put("property2", "test"))
         {
             MDC.current().put("property3", "rest");
             MDC.param("property4", "property4value");
 
-            try (ScopedMDC mdc1 = MDC.create("pfx")
+            try (CloseableMDC mdc1 = MDC.create("pfx")
                     .put("property4", "nested"))
             {
                 assertThat(mdcAdapter.getMap())
@@ -55,9 +55,7 @@ public class TestMDCCore {
                     .hasSize(5);
         }
 
-        assertThatThrownBy(() -> {
-            MDC.current().put("param", "test");
-        })
+        assertThatThrownBy(() -> MDC.current().put("param", "test"))
                 .as("Must be no active MDC")
                 .isInstanceOf(IllegalStateException.class);
         assertThat(mdcAdapter.getMap()).isEmpty();
@@ -65,15 +63,13 @@ public class TestMDCCore {
 
     @Test
     public void noActiveMDCShouldFail() {
-        assertThatThrownBy(() -> {
-            MDC.current().put("param", "test");
-        }).isInstanceOf(IllegalStateException.class);
+        assertThatThrownBy(() -> MDC.current().put("param", "test")).isInstanceOf(IllegalStateException.class);
     }
 
     @Test
     public void nullKeyMustNotBeAccepted() {
         assertThatThrownBy(() -> {
-            try (ScopedMDC mdc = MDC.create()) {
+            try (CloseableMDC mdc = MDC.create()) {
                 mdc.put(null, 1);
             }
         })
@@ -84,7 +80,8 @@ public class TestMDCCore {
     @Test
     public void doubleCloseMDCShouldFail() {
         assertThatThrownBy(() -> {
-            try (ScopedMDC mdc = MDC.create()) {
+            try (CloseableMDC mdc = MDC.create()) {
+                //noinspection RedundantExplicitClose
                 mdc.close();
             }
         })

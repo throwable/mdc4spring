@@ -1,3 +1,17 @@
-[ ]
-// no @MDCScope on method: leave param in parent's scope???
-public void someMethod(@MDCParam param)
+Ideas and roadmap
+-----------------
+[x] Add #systemProperties variable
+
+[ ] ELK adds an automatic correlation to MDC using agent instrumentation:
+    https://www.elastic.co/guide/en/apm/agent/java/current/log-correlation.html.
+    Adds these MDC parameters are automátically added:
+        - transaction.id
+        - trace.id
+        - error.id
+    How to convert Java logs to ELK format: https://www.elastic.co/guide/en/ecs-logging/java/1.x/setup.html
+
+[x] Access to private fields in local bean?
+
+[ ] Add support for jboss-log-manager?
+
+[ ] Use Agent or Annotation Processor instead of AOP?
