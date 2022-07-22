@@ -8,8 +8,8 @@ import org.springframework.stereotype.Service;
 
 @Service
 @WithMDC(parameters = {
-        @MDCParam(name = "environmentProperty", expression = "#environment['sample.property']"),
-        @MDCParam(name = "staticParam", expression = "'Static Value'")
+        @MDCParam(name = "environmentProperty", eval = "#environment['sample.property']"),
+        @MDCParam(name = "staticParam", eval = "'Static Value'")
 })
 public class BeanMDCComponent {
     private final static Logger log = LoggerFactory.getLogger(NestedMDCComponent.class);
@@ -24,14 +24,14 @@ public class BeanMDCComponent {
     }
 
     @WithMDC(parameters = {
-            @MDCParam(name = "anotherProperty", expression = "'Fixed value'")
+            @MDCParam(name = "anotherProperty", eval = "'Fixed value'")
     })
     public void execWithBeanMDCAndMethodMDCMix(@MDCParam String param1, String sample) {
         log.info("Bean MDC with method MDC mix");
     }
 
     @WithMDC(name = "nestedScope", parameters = {
-            @MDCParam(name = "anotherProperty", expression = "'Fixed value'")
+            @MDCParam(name = "anotherProperty", eval = "'Fixed value'")
     })
     public void execWithBeanMDCAndNestedMethodMDCMix(@MDCParam String param1, String sample) {
         log.info("Bean MDC with method MDC on different namespace");

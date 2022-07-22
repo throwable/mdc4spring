@@ -29,10 +29,14 @@ public class TestMDCCore {
 
     @Test
     public void testManualMDCOperation() {
+        assertThat(MDC.hasCurrent()).isFalse();
+
         try (CloseableMDC mdc = MDC.create()
                 .put("property1", 1)
                 .put("property2", "test"))
         {
+            assertThat(MDC.hasCurrent()).isTrue();
+
             MDC.current().put("property3", "rest");
             MDC.param("property4", "property4value");
 
@@ -42,6 +46,7 @@ public class TestMDCCore {
                 assertThat(mdcAdapter.getMap())
                         .containsEntry("property1", "1")
                         .containsEntry("pfx.property4", "nested");
+                assertThat(MDC.root()).isSameAs(mdc);
             }
 
             mdc.put("property5", "property5value");
@@ -53,12 +58,37 @@ public class TestMDCCore {
                     .containsEntry("property4", "property4value")
                     .containsEntry("property5", "property5value")
                     .hasSize(5);
+
+            mdc.remove("property5").remove("property4");
+            assertThat(mdcAdapter.getMap())
+                    .doesNotContainKey("property5")
+                    .doesNotContainKey("property4")
+                    .containsKey("property3");
         }
 
         assertThatThrownBy(() -> MDC.current().put("param", "test"))
                 .as("Must be no active MDC")
                 .isInstanceOf(IllegalStateException.class);
         assertThat(mdcAdapter.getMap()).isEmpty();
+    }
+
+    @Test
+    public void parameterOverwrites() {
+        try (CloseableMDC mdc1 = MDC.create()) {
+            MDC.param("some.prefix.param1", "value1");
+            try (CloseableMDC mdc2 = MDC.create("some")) {
+                MDC.param("prefix.param1", "value2");
+                try (CloseableMDC mdc3 = MDC.create("prefix")) {
+                    MDC.param("param1", "value3");
+                    assertThat(mdcAdapter.getMap())
+                            .containsEntry("some.prefix.param1", "value3");
+                }
+                assertThat(mdcAdapter.getMap())
+                        .containsEntry("some.prefix.param1", "value2");
+            }
+            assertThat(mdcAdapter.getMap())
+                    .containsEntry("some.prefix.param1", "value1");
+        }
     }
 
     @Test

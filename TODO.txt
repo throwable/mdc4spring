@@ -15,3 +15,27 @@ Ideas and roadmap
 [ ] Add support for jboss-log-manager?
 
 [ ] Use Agent or Annotation Processor instead of AOP?
+    https://blog.jcore.com/2016/12/modify-java-8-final-behaviour-with-annotations/
+
+[ ] Copy MDC state to another MDC context.
+    [ ] Add support for Spring @Async annotation
+
+[x] Parent-child parameters overwrite: when the child MDC is closed restore parent's params values that were overwritten by child MDC
+
+[ ] In addition to try-with-resources add lambdas-based methods to MDC interface that open new MDC and run the task specified as lambda.
+
+[ ] Document all public API
+
+[ ] How to maintain method arguments' names after compilation (debug information)
+    - remove @MDCParam.include
+
+[ ] Class MDC: add lambda-based MDC definitions:
+    MDC.with()
+        .param("param1", "value1")
+        .param("param2", "value2")
+        .run(() -> {
+            ...
+        });
+    MDC.runWith(() -> {
+        ...
+    })

@@ -35,34 +35,34 @@ public class AnnotatedMethodMDCParamsResolver {
 
             for (MDCParam parameter : annotatedMethodConfig.getBeanMDCAnno().parameters()) {
                 String paramName = !parameter.name().isEmpty() ? parameter.name() : parameter.value();
-                if (paramName.isEmpty() || !parameter.include())
+                if (paramName.isEmpty()/* || !parameter.include()*/)
                     continue;
-                Object expressionResult = evaluateExpression(parameter.expression(), target, null);
+                Object expressionResult = evaluateExpression(parameter.eval(), target, null);
                 beanMDCParamValues.put(paramName, expressionResult);
             }
         }
 
         Map<String, Object> methodMDCParamValues = null;
-        Set<String> excludeKeys = Collections.emptySet();
+        //Set<String> excludeKeys = Collections.emptySet();
 
         if (!annotatedMethodConfig.getMdcParamByParameterName().isEmpty()) {
             int estimatedCapacity = annotatedMethodConfig.getMdcParamByParameterName().size() +
                     (annotatedMethodConfig.getMethodMDCAnno() != null ? annotatedMethodConfig.getMethodMDCAnno().parameters().length : 0);
             methodMDCParamValues = new HashMap<>(estimatedCapacity * 4 / 3 + 1);
-            excludeKeys = new HashSet<>(annotatedMethodConfig.getMdcParamByParameterName().size() * 4 / 3 + 1);
+            //excludeKeys = new HashSet<>(annotatedMethodConfig.getMdcParamByParameterName().size() * 4 / 3 + 1);
 
             for (Map.Entry<String, MDCParam> argumentParam : annotatedMethodConfig.getMdcParamByParameterName().entrySet()) {
                 String paramName = argumentParam.getKey();
                 MDCParam parameter = argumentParam.getValue();
                 Object argumentValue = args[annotatedMethodConfig.getParamIndex(paramName)];
                 Object expressionResult;
-                if (parameter.expression().isEmpty())
+                if (parameter.eval().isEmpty())
                     expressionResult = argumentValue;
                 else
-                    expressionResult = evaluateExpression(parameter.expression(), argumentValue, null);
+                    expressionResult = evaluateExpression(parameter.eval(), argumentValue, null);
                 methodMDCParamValues.put(paramName, expressionResult);
-                if (!parameter.include())
-                    excludeKeys.add(paramName);
+                /*if (!parameter.include())
+                    excludeKeys.add(paramName);*/
             }
         }
 
@@ -84,9 +84,9 @@ public class AnnotatedMethodMDCParamsResolver {
 
             for (MDCParam parameter : annotatedMethodConfig.getMethodMDCAnno().parameters()) {
                 String paramName = !parameter.name().isEmpty() ? parameter.name() : parameter.value();
-                if (paramName.isEmpty() || !parameter.include())
+                if (paramName.isEmpty()/* || !parameter.include()*/)
                     continue;
-                Object expressionResult = evaluateExpression(parameter.expression(), target, argumentValues);
+                Object expressionResult = evaluateExpression(parameter.eval(), target, argumentValues);
                 methodMDCParamValues.put(paramName, expressionResult);
             }
         }
@@ -94,7 +94,7 @@ public class AnnotatedMethodMDCParamsResolver {
         if (methodMDCParamValues == null)
             methodMDCParamValues = Collections.emptyMap();
 
-        methodMDCParamValues.keySet().removeAll(excludeKeys);
+        //methodMDCParamValues.keySet().removeAll(excludeKeys);
 
         return new MethodInvocationMDCParametersValues(
                 annotatedMethodConfig.getBeanMDCAnno() != null ? annotatedMethodConfig.getBeanMDCAnno().name() : null,

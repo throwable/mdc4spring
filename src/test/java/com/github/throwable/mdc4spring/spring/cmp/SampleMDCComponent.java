@@ -57,20 +57,20 @@ public class SampleMDCComponent {
     }
 
     @WithMDC(parameters = {
-            @MDCParam(name = "keyParam1", expression = "'Sample string'"),
-            @MDCParam(name = "keyParam2", expression = "'Number ' + 5")
+            @MDCParam(name = "keyParam1", eval = "'Sample string'"),
+            @MDCParam(name = "keyParam2", eval = "'Number ' + 5")
     })
     public void execWithMDCWithFixedParameters() {
         log.info("Fixed parameters");
     }
 
     @WithMDC(parameters = {
-            @MDCParam(name = "localFieldParam", expression = "sampleFieldValue"),
-            @MDCParam(name = "localAccessorParam", expression = "sampleAccessorValue"),
-            @MDCParam(name = "localMethodParam", expression = "'Transformed: ' + sampleMethodValue(sampleFieldValue)"),
-            @MDCParam(name = "environmentProperty", expression = "#environment['sample.property']"),
-            @MDCParam(name = "systemProperty", expression = "#systemProperties['user.home']"),
-            @MDCParam(name = "externalParameterBeanValue", expression = "@externalParameterBean.externalBeanValue"),
+            @MDCParam(name = "localFieldParam", eval = "sampleFieldValue"),
+            @MDCParam(name = "localAccessorParam", eval = "sampleAccessorValue"),
+            @MDCParam(name = "localMethodParam", eval = "'Transformed: ' + sampleMethodValue(sampleFieldValue)"),
+            @MDCParam(name = "environmentProperty", eval = "#environment['sample.property']"),
+            @MDCParam(name = "systemProperty", eval = "#systemProperties['user.home']"),
+            @MDCParam(name = "externalParameterBeanValue", eval = "@externalParameterBean.externalBeanValue"),
     })
     public void execWithMDCWithReferencedParameters() {
         log.info("Parameters referencing local bean and environment");
@@ -78,12 +78,12 @@ public class SampleMDCComponent {
 
 
     @WithMDC(parameters = {
-            @MDCParam(name = "concatAllArgumentsParam", expression = "#param1 + #param2 + #param3 + #clazz + #notIncluded")
+            @MDCParam(name = "concatAllArgumentsParam", eval = "#param1 + #param2 + #param3 + #clazz + #notIncluded")
     })
     public void execWithMDCWithArgumentsAsParameters(@MDCParam String param1,
                                                      @MDCParam("param2") int myArg,
                                                      @MDCParam BigDecimal param3,
-                                                     @MDCParam(expression = "name") Class<?> clazz,
+                                                     @MDCParam(eval = "name") Class<?> clazz,
                                                      String notIncluded)
     {
         log.info("Arguments as MDC parameters");
