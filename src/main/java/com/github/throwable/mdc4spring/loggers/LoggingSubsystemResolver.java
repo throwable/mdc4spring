@@ -1,5 +1,7 @@
 package com.github.throwable.mdc4spring.loggers;
 
+import java.lang.reflect.InvocationTargetException;
+
 public class LoggingSubsystemResolver {
 
     public static LoggerMDCAdapter resolveMDCAdapter() {
@@ -7,14 +9,16 @@ public class LoggingSubsystemResolver {
             String adapterClazz = System.getProperty(LoggerMDCAdapter.MDC_ADAPTER_SYSTEM_PROPERTY);
             try {
                 Class<?> aClass = Thread.currentThread().getContextClassLoader().loadClass(adapterClazz);
-                return (LoggerMDCAdapter) aClass.newInstance();
+                return (LoggerMDCAdapter) aClass.getDeclaredConstructor().newInstance();
             } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
                 throw new RuntimeException("Can not instantiate logger MDC adapter class: " + adapterClazz, e);
+            } catch (InvocationTargetException | NoSuchMethodException e) {
+                throw new RuntimeException(e);
             }
         }
 
         if (classExistsInClasspath("org.slf4j.Logger")) {
-            debugSlf4J("MDC4Spring is configured to use with Slf4J");
+            slf4JGreeting();
             return new Slf4JLoggerMDCAdapter();
         }
         else if (classExistsInClasspath("org.apache.logging.log4j.Logger")) {
@@ -48,7 +52,7 @@ public class LoggingSubsystemResolver {
         org.apache.logging.log4j.LogManager.getLogger(LoggingSubsystemResolver.class).debug("MDC4Spring is configured to use with Log4J2");
     }
 
-    private static void debugSlf4J(String message) {
-        org.slf4j.LoggerFactory.getLogger(LoggingSubsystemResolver.class).debug(message);
+    private static void slf4JGreeting() {
+        org.slf4j.LoggerFactory.getLogger(LoggingSubsystemResolver.class).debug("MDC4Spring is configured to use with Slf4J");
     }
 }
