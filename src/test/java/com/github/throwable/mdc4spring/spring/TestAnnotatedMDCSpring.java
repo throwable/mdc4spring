@@ -2,6 +2,7 @@ package com.github.throwable.mdc4spring.spring;
 
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import com.github.throwable.mdc4spring.InMemoryLoggingEventsAppender;
+import com.github.throwable.mdc4spring.MDC;
 import com.github.throwable.mdc4spring.spring.cmp.BeanMDCComponent;
 import com.github.throwable.mdc4spring.spring.cmp.SampleMDCComponent;
 import org.junit.jupiter.api.BeforeEach;
@@ -86,6 +87,34 @@ public class TestAnnotatedMDCSpring {
                 .as("By exiting nested all inner keys must be removed")
                 .hasSize(1)
                 .containsEntry("component1.sampleKey", "Some Value");
+    }
+
+    @Test
+    public void nestedBeanWithInvocationInCurrentMDC() {
+        sampleMDCComponent.execInvocationInCurrentMDC();
+        List<ILoggingEvent> traces = InMemoryLoggingEventsAppender.getLoggingEvents();
+        assertThat(traces).hasSize(2);
+        assertThat(traces.get(0).getMDCPropertyMap())
+                .hasSize(2)
+                .containsEntry("param1", "value1")
+                .containsEntry("param2", "value2");
+        assertThat(traces.get(1).getMDCPropertyMap())
+                .as("Current MDC parameters should not be cleared after the method call")
+                .hasSize(2)
+                .containsEntry("param1", "value1")
+                .containsEntry("param2", "value2");
+    }
+
+    @Test
+    public void paramMethodCallWithoutMDCDefined() {
+        sampleMDCComponent.execParamMethodWithoutMDC();
+        List<ILoggingEvent> traces = InMemoryLoggingEventsAppender.getLoggingEvents();
+        assertThat(traces).hasSize(1);
+        assertThat(traces.get(0).getMDCPropertyMap())
+                .as("MDC must implicitly be created")
+                .hasSize(1)
+                .containsEntry("keyParam1", "Sample string");
+        assertThat(MDC.hasCurrent()).isFalse();
     }
 
     @Test

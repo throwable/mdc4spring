@@ -48,6 +48,8 @@ Ideas and roadmap
     @MDCParam(name = "param2", eval = "...");
     public void myMethod(@MDCParam param3)
 
-[ ] Behavioral changes: create new MDC context only with explicit definition @WithMDC.
+[x] Behavioral changes: create new MDC context only with explicit definition @WithMDC.
     Any call to a method annotated with @MDCParam and without @WithMDC will set parameters on current MDC.
     After the method exits all parameters must be removed explicitly.
+
+[ ] Refactor detection of logging subsystem

@@ -5,15 +5,14 @@ import org.springframework.lang.Nullable;
 import java.util.Map;
 
 public class MethodInvocationMDCParametersValues {
-
-    private final String beanMDCNamespace;
+    @Nullable private final String beanMDCNamespace;
     private final Map<String, Object> beanMDCParamValues;
-    private final String methodMDCNamespace;
+    @Nullable private final String methodMDCNamespace;
     private final Map<String, Object> methodMDCParamValues;
 
-    public MethodInvocationMDCParametersValues(String beanMDCNamespace,
+    public MethodInvocationMDCParametersValues(@Nullable String beanMDCNamespace,
                                                Map<String, Object> beanMDCParamValues,
-                                               String methodMDCNamespace,
+                                               @Nullable String methodMDCNamespace,
                                                Map<String, Object> methodMDCParamValues)
     {
         this.beanMDCNamespace = beanMDCNamespace;
@@ -22,11 +21,12 @@ public class MethodInvocationMDCParametersValues {
         this.methodMDCParamValues = methodMDCParamValues;
     }
 
-
+    @Nullable
     public String getMethodMDCNamespace() {
         return methodMDCNamespace;
     }
 
+    @Nullable
     public String getBeanMDCNamespace() {
         return beanMDCNamespace;
     }

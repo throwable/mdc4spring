@@ -94,9 +94,9 @@ public class AnnotatedMethodMDCParamsEvaluator {
         //methodMDCParamValues.keySet().removeAll(excludeKeys);
 
         return new MethodInvocationMDCParametersValues(
-                annotatedMethodConfig.getBeanMDCAnno() != null ? annotatedMethodConfig.getBeanMDCAnno().name() : "",
+                annotatedMethodConfig.getBeanMDCAnno() != null ? annotatedMethodConfig.getBeanMDCAnno().name() : null,
                 beanMDCParamValues,
-                annotatedMethodConfig.getMethodMDCAnno() != null ? annotatedMethodConfig.getMethodMDCAnno().name() : "",
+                annotatedMethodConfig.getMethodMDCAnno() != null ? annotatedMethodConfig.getMethodMDCAnno().name() : null,
                 methodMDCParamValues
         );
     }

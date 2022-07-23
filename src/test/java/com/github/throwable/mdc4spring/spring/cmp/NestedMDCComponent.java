@@ -1,5 +1,7 @@
 package com.github.throwable.mdc4spring.spring.cmp;
 
+import com.github.throwable.mdc4spring.MDC;
+import com.github.throwable.mdc4spring.anno.MDCParam;
 import com.github.throwable.mdc4spring.anno.WithMDC;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,5 +22,10 @@ public class NestedMDCComponent {
     public void execWithSameNameMDC() {
         current().put("nestedKey", "NestedKeyValue");
         log.info("nested component");
+    }
+
+    public void execWithCurrentMDC(@MDCParam String param1) {
+        MDC.param("param2", "value2");
+        log.info("Inside method call");
     }
 }

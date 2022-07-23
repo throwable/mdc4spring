@@ -9,6 +9,11 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.core.env.Environment;
 
+/**
+ * MDC4Spring autoconfiguration.
+ * When using Spring Boot it is added to your ApplicationContext automatically.
+ * If you are using Spring Framework you must import it manually.
+ */
 @Configuration
 @ComponentScan
 @EnableAspectJAutoProxy

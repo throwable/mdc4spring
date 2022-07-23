@@ -53,6 +53,14 @@ public class WithMDCAspect {
             // Not supposed to be here: wrong PointCut configuration?
             return joinPoint.proceed();
 
+        if (methodInvocationMdcParamValues.getBeanMDCNamespace() == null && methodInvocationMdcParamValues.getMethodMDCNamespace() == null) {
+            if (MDC.hasCurrent()) {
+                return invokeInCurrentMDC(joinPoint, methodInvocationMdcParamValues);
+            } else {
+                return invokeInNewMDC(joinPoint, methodInvocationMdcParamValues);
+            }
+        }
+
         if (!Objects.equals(
                 methodInvocationMdcParamValues.getBeanMDCNamespace(),
                 methodInvocationMdcParamValues.getMethodMDCNamespace()
@@ -61,33 +69,49 @@ public class WithMDCAspect {
             // Bean and method scope namespaces are different.
             // Create two separate MDCs: one for bean-level and another one for method-level,
             // for each one add their corresponding parameters.
-            try (CloseableMDC beanMdc = MDC.create(methodInvocationMdcParamValues.getBeanMDCNamespace())) {
-                methodInvocationMdcParamValues.getBeanMDCParamValues()
-                        .forEach(beanMdc::put);
-                try (CloseableMDC methodMdc = MDC.create(methodInvocationMdcParamValues.getMethodMDCNamespace())) {
-                    methodInvocationMdcParamValues.getMethodMDCParamValues()
-                            .forEach(methodMdc::put);
-
-                    return joinPoint.proceed();
-                }
-            }
+            return invokeInSeparateMDCs(joinPoint, methodInvocationMdcParamValues);
         } else {
             // Bean and method scope namespaces are the same.
             // Create a unique MDCs containing both bean and method parameters.
-            String namespace = methodInvocationMdcParamValues.getBeanMDCNamespace() != null ?
-                    methodInvocationMdcParamValues.getBeanMDCNamespace() :
-                    methodInvocationMdcParamValues.getMethodMDCNamespace();
-            if (namespace == null)
-                namespace = "";
+            return invokeInNewMDC(joinPoint, methodInvocationMdcParamValues);
+        }
+    }
 
-            try (CloseableMDC mdc = MDC.create(namespace)) {
-                methodInvocationMdcParamValues.getBeanMDCParamValues()
-                        .forEach(mdc::put);
+    private Object invokeInNewMDC(ProceedingJoinPoint joinPoint, MethodInvocationMDCParametersValues methodInvocationMdcParamValues) throws Throwable {
+        String namespace = methodInvocationMdcParamValues.getBeanMDCNamespace() != null ?
+                methodInvocationMdcParamValues.getBeanMDCNamespace() :
+                (methodInvocationMdcParamValues.getMethodMDCNamespace() != null ?
+                        methodInvocationMdcParamValues.getMethodMDCNamespace() : "");
+
+        try (CloseableMDC mdc = MDC.create(namespace)) {
+            methodInvocationMdcParamValues.getBeanMDCParamValues()
+                    .forEach(mdc::put);
+            methodInvocationMdcParamValues.getMethodMDCParamValues()
+                    .forEach(mdc::put);
+
+            return joinPoint.proceed();
+        }
+    }
+
+    private Object invokeInSeparateMDCs(ProceedingJoinPoint joinPoint, MethodInvocationMDCParametersValues methodInvocationMdcParamValues) throws Throwable {
+        try (CloseableMDC beanMdc = MDC.create(methodInvocationMdcParamValues.getBeanMDCNamespace())) {
+            methodInvocationMdcParamValues.getBeanMDCParamValues()
+                    .forEach(beanMdc::put);
+            try (CloseableMDC methodMdc = MDC.create(methodInvocationMdcParamValues.getMethodMDCNamespace())) {
                 methodInvocationMdcParamValues.getMethodMDCParamValues()
-                        .forEach(mdc::put);
+                        .forEach(methodMdc::put);
 
                 return joinPoint.proceed();
             }
         }
+    }
+
+    private Object invokeInCurrentMDC(ProceedingJoinPoint joinPoint, MethodInvocationMDCParametersValues methodInvocationMdcParamValues) throws Throwable {
+        // ??? remove parameters after method returns
+        methodInvocationMdcParamValues.getBeanMDCParamValues()
+                .forEach(MDC::param);
+        methodInvocationMdcParamValues.getMethodMDCParamValues()
+                .forEach(MDC::param);
+        return joinPoint.proceed();
     }
 }

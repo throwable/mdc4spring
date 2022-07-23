@@ -56,17 +56,32 @@ public class SampleMDCComponent {
         log.info("After nested MDC");
     }
 
+    @WithMDC
+    public void execInvocationInCurrentMDC() {
+        nestedMDCComponent.execWithCurrentMDC("value1");
+        log.info("After invocation");
+    }
+
+    @MDCParam(name = "keyParam1", eval = "'Sample string'")
+    public void execParamMethodWithoutMDC() {
+        log.info("MDC must be created implicitly");
+    }
+
+
+    @WithMDC
     @MDCParam(name = "keyParam1", eval = "'Sample string'")
     public void execWithMethodOnlyMDCParameter() {
         log.info("Only one parameter");
     }
 
+    @WithMDC
     @MDCParam(name = "keyParam1", eval = "'Sample string'")
     @MDCParam(name = "keyParam2", eval = "'Number ' + 5")
     public void execWithFixedMDCParameters() {
         log.info("Fixed parameters");
     }
 
+    @WithMDC
     @MDCParam(name = "localFieldParam", eval = "sampleFieldValue")
     @MDCParam(name = "localAccessorParam", eval = "sampleAccessorValue")
     @MDCParam(name = "localMethodParam", eval = "'Transformed: ' + sampleMethodValue(sampleFieldValue)")
@@ -77,11 +92,13 @@ public class SampleMDCComponent {
         log.info("Parameters referencing local bean and environment");
     }
 
+    @WithMDC
     public void execWithMethodArgumentAsMDCParameter(@MDCParam String param1, String param2)
     {
         log.info("Argument as MDC parameter");
     }
 
+    @WithMDC
     @MDCParam(name = "concatAllArgumentsParam", eval = "#param1 + #param2 + #param3 + #clazz + #notIncluded")
     public void execWithMethodArgumentsAsMDCParameters(@MDCParam String param1,
                                                        @MDCParam("param2") int myArg,
