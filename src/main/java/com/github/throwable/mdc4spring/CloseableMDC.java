@@ -48,11 +48,11 @@ public class CloseableMDC implements AutoCloseable, MDC {
         return loggerMDCAdapter;
     }
 
-    public static CloseableMDC create() {
+    static CloseableMDC create() {
         return create("");
     }
 
-    public static CloseableMDC create(String namespace) {
+    static CloseableMDC create(String namespace) {
         CloseableMDC current = currentMdc.get();
         String keyPrefix = current != null ? current.namePrefix : "";
         String newKeyPrefix;
@@ -77,16 +77,6 @@ public class CloseableMDC implements AutoCloseable, MDC {
         else
             currentMdc.remove();
         mdcData = null;
-    }
-
-    @SuppressWarnings("resource")
-    public static void param(String name, Object value) {
-        current().put(name, value);
-    }
-
-    @SuppressWarnings("resource")
-    public static void rootParam(String name, Object value) {
-        root().put(name, value);
     }
 
     @Override

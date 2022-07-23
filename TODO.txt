@@ -32,7 +32,7 @@ Ideas and roadmap
     Already resolved in Spring Boot Plugin
     https://docs.spring.io/spring-boot/docs/current/maven-plugin/reference/htmlsingle/
 
-[ ] Class MDC: add lambda-based MDC definitions:
+[x] Class MDC: add lambda-based MDC definitions:
     MDC.with()
         .param("param1", "value1")
         .param("param2", "value2")

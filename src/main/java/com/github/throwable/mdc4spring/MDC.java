@@ -22,7 +22,6 @@ import com.github.throwable.mdc4spring.loggers.LoggerMDCAdapter;
  *     log.info("param1 is still here while param2 is already out of scope");
  * }
  * </pre>
- *
  */
 public interface MDC {
     /**
@@ -106,7 +105,7 @@ public interface MDC {
      * @throws IllegalStateException if no MDC defined at current execution scope.
      */
     static void param(String name, Object value) throws IllegalArgumentException, IllegalStateException {
-        CloseableMDC.param(name, value);
+        current().put(name, value);
     }
 
     /**
@@ -117,8 +116,46 @@ public interface MDC {
      * @throws IllegalStateException if no MDC defined at current execution scope.
      */
     static void rootParam(String name, Object value) throws IllegalArgumentException, IllegalStateException {
-        CloseableMDC.rootParam(name, value);
+        root().put(name, value);
     }
+
+    /**
+     * Build new MDC and pass lambda that will be invoked inside it.
+     * <p>
+     * Sample usage:
+     * <pre>
+     * MDC.with("component")
+     *         .param("param1", "value1")
+     *         .param("param2", "value2")
+     *         .run(() -> {
+     *             ...
+     *         });
+     * </pre>
+     * @param namespace namespace for new MDC
+     * @return invocation builder for new MDC
+     */
+    static MDCInvocationBuilder with(String namespace) {
+        return new MDCInvocationBuilder(namespace);
+    }
+
+    /**
+     * Build new MDC and pass lambda that will be invoked inside it.
+     * <p>
+     * Sample usage:
+     * <pre>
+     * MDC.with("component")
+     *         .param("param1", "value1")
+     *         .param("param2", "value2")
+     *         .run(() -> {
+     *             ...
+     *         });
+     * </pre>
+     * @return invocation builder for new MDC
+     */
+    static MDCInvocationBuilder with() {
+        return new MDCInvocationBuilder(null);
+    }
+
 
     /**
      * If current MDC is a nested one return its direct parent.

@@ -18,10 +18,12 @@ public class TestMDCCore {
         originalMDCLoggerAdapter = MDC.getLoggerMDCAdapter();
         MDC.setLoggerMDCAdapter(mdcAdapter);
     }
+
     @AfterAll
     public static void restoreMDCAdapter() {
         MDC.setLoggerMDCAdapter(originalMDCLoggerAdapter);
     }
+
     @BeforeEach
     public void clearMdc() {
         mdcAdapter.getMap().clear();
@@ -33,16 +35,14 @@ public class TestMDCCore {
 
         try (CloseableMDC mdc = MDC.create()
                 .put("property1", 1)
-                .put("property2", "test"))
-        {
+                .put("property2", "test")) {
             assertThat(MDC.hasCurrent()).isTrue();
 
             MDC.current().put("property3", "rest");
             MDC.param("property4", "property4value");
 
-            try (CloseableMDC mdc1 = MDC.create("pfx")
-                    .put("property4", "nested"))
-            {
+            try (CloseableMDC ignored = MDC.create("pfx")
+                    .put("property4", "nested")) {
                 assertThat(mdcAdapter.getMap())
                         .containsEntry("property1", "1")
                         .containsEntry("pfx.property4", "nested");
@@ -74,11 +74,11 @@ public class TestMDCCore {
 
     @Test
     public void parameterOverwrites() {
-        try (CloseableMDC mdc1 = MDC.create()) {
+        try (CloseableMDC ignored = MDC.create()) {
             MDC.param("some.prefix.param1", "value1");
-            try (CloseableMDC mdc2 = MDC.create("some")) {
+            try (CloseableMDC ignored1 = MDC.create("some")) {
                 MDC.param("prefix.param1", "value2");
-                try (CloseableMDC mdc3 = MDC.create("prefix")) {
+                try (CloseableMDC ignored2 = MDC.create("prefix")) {
                     MDC.param("param1", "value3");
                     assertThat(mdcAdapter.getMap())
                             .containsEntry("some.prefix.param1", "value3");
@@ -121,9 +121,9 @@ public class TestMDCCore {
 
     @Test
     public void rootParamTest() {
-        try (CloseableMDC rootMDC = MDC.create()) {
-            try (CloseableMDC mdc2 = MDC.create()) {
-                try (CloseableMDC mdc3 = MDC.create()) {
+        try (CloseableMDC ignored = MDC.create()) {
+            try (CloseableMDC ignored1 = MDC.create()) {
+                try (CloseableMDC ignored2 = MDC.create()) {
                     MDC.param("localParam", "localValue");
                     MDC.rootParam("rootParam", "rootParamValue");
                 }
@@ -132,5 +132,45 @@ public class TestMDCCore {
                     .containsEntry("rootParam", "rootParamValue")
                     .doesNotContainKey("localParam");
         }
+    }
+
+    @Test
+    public void mdcInvocationBuilder() throws Exception {
+        MDC.with("component")
+                .param("param1", "value1")
+                .param("param2", "value2")
+                .run(() -> assertThat(mdcAdapter.getMap())
+                        .containsEntry("component.param1", "value1")
+                        .containsEntry("component.param2", "value2"));
+
+        final String result = MDC.with()
+                .param("param1", "value1")
+                .apply(() -> {
+                    assertThat(mdcAdapter.getMap())
+                            .hasSize(1)
+                            .containsEntry("param1", "value1");
+                    return "Result";
+                });
+        assertThat(result).isEqualTo("Result");
+
+        final String callResult = MDC.with()
+                .param("param1", "value1")
+                .call(() -> {
+                    assertThat(mdcAdapter.getMap())
+                            .hasSize(1)
+                            .containsEntry("param1", "value1");
+                    return "Result";
+                });
+        assertThat(callResult).isEqualTo("Result");
+
+        assertThatThrownBy(() -> MDC.with()
+                .param("param1", "value1")
+                .call(() -> {
+                    assertThat(mdcAdapter.getMap())
+                            .hasSize(1)
+                            .containsEntry("param1", "value1");
+                    throw new UnsupportedOperationException();
+                })
+        ).isInstanceOf(UnsupportedOperationException.class);
     }
 }
