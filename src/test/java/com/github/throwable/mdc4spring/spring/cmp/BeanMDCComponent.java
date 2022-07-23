@@ -7,15 +7,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 @Service
-@WithMDC(parameters = {
-        @MDCParam(name = "environmentProperty", eval = "#environment['sample.property']"),
-        @MDCParam(name = "staticParam", eval = "'Static Value'")
-})
+@MDCParam(name = "environmentProperty", eval = "#environment['sample.property']")
+@MDCParam(name = "staticParam", eval = "'Static Value'")
 public class BeanMDCComponent {
     private final static Logger log = LoggerFactory.getLogger(NestedMDCComponent.class);
 
 
-    public void execWithBeanMDC() {
+    public void execWithBeanMDCParams() {
         log.info("Bean MDC method");
     }
 
@@ -23,17 +21,14 @@ public class BeanMDCComponent {
         log.info("Bean MDC method with params");
     }
 
-    @WithMDC(parameters = {
-            @MDCParam(name = "anotherProperty", eval = "'Fixed value'")
-    })
-    public void execWithBeanMDCAndMethodMDCMix(@MDCParam String param1, String sample) {
+    @MDCParam(name = "anotherProperty", eval = "'Fixed value'")
+    public void execWithBeanParamsAndMethodParamsCombined(@MDCParam String param1, String sample) {
         log.info("Bean MDC with method MDC mix");
     }
 
-    @WithMDC(name = "nestedScope", parameters = {
-            @MDCParam(name = "anotherProperty", eval = "'Fixed value'")
-    })
-    public void execWithBeanMDCAndNestedMethodMDCMix(@MDCParam String param1, String sample) {
+    @WithMDC(name = "nestedScope")
+    @MDCParam(name = "anotherProperty", eval = "'Fixed value'")
+    public void execWithBeanMDCAndNestedMethodMDCCombined(@MDCParam String param1, String sample) {
         log.info("Bean MDC with method MDC on different namespace");
     }
 }

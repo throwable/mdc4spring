@@ -129,7 +129,7 @@ public class CloseableMDC implements AutoCloseable, MDC {
                 loggerMDCAdapter.put(nameWithPrefix, value != null ? value.toString() : null);
             } else {
                 if (getParent() != null)
-                    restore(nameWithPrefix);
+                    getParent().restore(nameWithPrefix);
             }
         }
     }

@@ -1,23 +1,24 @@
 package com.github.throwable.mdc4spring.anno;
 
+import org.springframework.core.annotation.AliasFor;
+
 import java.lang.annotation.*;
 
 /**
- *
- * The annotation is used on managed bean's public methods and indicates that bean's method must be executed inside new MDC.
- * All parameters defined in "parameters" attribute or set inside the method's scope will belong to current MDC.
- * After the method returns the MDC will be closed and all defined parameters will be removed from later traces.
- * Any parameter defined in outer methods' scopes will still persist in traces.
- * When placed at class level the annotation will define the same MDC for all its public methods.
+ * Creates a new MDC for method invocation.
+ * The annotation is applicable to container managed beans, and indicates that the annotated method must be executed inside new MDC.
+ * All parameters defined with <code>{@literal @}MDCParam</code> annotation or set explicitly with <code>MDC.param()</code>
+ * inside the method's body will belong to the new MDC.
+ * The new MDC inherits all parameters already defined in current MDC (if any), so logging traces will always contain
+ * the complete set of parameters defined by all MDCs in the chain.
  * <p>
- * Sample usage:
- * <blockquote><pre>
- * {@literal @}WithMDC(name = "orders", parameters = {
- *     {@literal @}MDCParam(name = "transactionId", eval = "#order.transactionId"),
- *     {@literal @}MDCParam(name = "clientId", eval = "#order.clientId")
- * })
- * public void createOrder(Order order, {@literal @}MDCParam(eval = "name") Queue queue, {@literal @}MDCParam Priority priority)
- * </pre></blockquote>
+ * After the method returns, the MDC will be closed, all its parameters will be removed from later logging traces and
+ * a parent MDC will be restored (if any).
+ * <p>
+ * When placed at class level the annotation will create a new MDC for all its public methods.
+ * <p>
+ * <b>Note that this annotation only works for bean public methods that are invoked from outside the bean scope, and
+ * will have no effect on any local method invocation.</b>
  * @see MDCParam
  */
 @Documented
@@ -28,22 +29,12 @@ public @interface WithMDC {
      * MDC name (optional).
      * The name will be used as a prefix for all parameters defined inside the MDC scope.
      */
+    @AliasFor("value")
     String name() default "";
 
     /**
-     * List of predefined parameters for current MDC.
-     * An {@literal @}MDCParam must define a unique name and expression that evaluates its value.
-     * <p>
-     * The evaluation context will contain references to:
-     * <ul>
-     *     <li>Local bean as a <code>#root</code> object. You have an access to bean's private fields and properties.</li>
-     *     <li>All method's arguments using <code>#argumentName</code> variable</li>
-     *     <li>Spring configuration properties available with <code>#environment</code> map</li>
-     *     <li>System properties at <code>#systemProperties</code> variable</li>
-     * </ul>
-     * <p>
-     * For more information please refer to <a href="https://docs.spring.io/spring-framework/docs/current/reference/html/core.html#expressions">Spring Expression Language</a> documentation.
-     * @see MDCParam
+     * MDC name (optional). Alias for <code>name</code>.
      */
-    MDCParam[] parameters() default {};
+    @AliasFor("name")
+    String value() default "";
 }

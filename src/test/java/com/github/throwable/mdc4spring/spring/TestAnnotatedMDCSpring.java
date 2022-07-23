@@ -89,8 +89,18 @@ public class TestAnnotatedMDCSpring {
     }
 
     @Test
+    public void mdcWithMethodOnlyMDCParameter() {
+        sampleMDCComponent.execWithMethodOnlyMDCParameter();
+        List<ILoggingEvent> traces = InMemoryLoggingEventsAppender.getLoggingEvents();
+        assertThat(traces).hasSize(1);
+        assertThat(traces.get(0).getMDCPropertyMap())
+                .hasSize(1)
+                .containsEntry("keyParam1", "Sample string");
+    }
+
+    @Test
     public void mdcWithFixedParameters() {
-        sampleMDCComponent.execWithMDCWithFixedParameters();
+        sampleMDCComponent.execWithFixedMDCParameters();
         List<ILoggingEvent> traces = InMemoryLoggingEventsAppender.getLoggingEvents();
         assertThat(traces).hasSize(1);
         assertThat(traces.get(0).getMDCPropertyMap())
@@ -100,8 +110,8 @@ public class TestAnnotatedMDCSpring {
     }
 
     @Test
-    public void mdcWithReferencedParameters() {
-        sampleMDCComponent.execWithMDCWithReferencedParameters();
+    public void mdcWithParametersReferencingContext() {
+        sampleMDCComponent.execWithMDCParametersReferencingContext();
         List<ILoggingEvent> traces = InMemoryLoggingEventsAppender.getLoggingEvents();
         assertThat(traces).hasSize(1);
         assertThat(traces.get(0).getMDCPropertyMap())
@@ -116,8 +126,20 @@ public class TestAnnotatedMDCSpring {
 
 
     @Test
-    public void mdcWithArgumentsAsParameters() {
-        sampleMDCComponent.execWithMDCWithArgumentsAsParameters(
+    public void mdcMethodArgumentAsAParameter() {
+        sampleMDCComponent.execWithMethodArgumentAsMDCParameter(
+                "Param1 value", "Param2 value");
+        List<ILoggingEvent> traces = InMemoryLoggingEventsAppender.getLoggingEvents();
+        assertThat(traces).hasSize(1);
+        assertThat(traces.get(0).getMDCPropertyMap())
+                .hasSize(1)
+                .containsEntry("param1", "Param1 value")
+                .doesNotContainKey("param2");
+    }
+
+    @Test
+    public void mdcMethodArgumentsAsParameters() {
+        sampleMDCComponent.execWithMethodArgumentsAsMDCParameters(
                 "Param1 value", 42, new BigDecimal(65536), BigDecimal.class, "ParamNotIncluded");
         List<ILoggingEvent> traces = InMemoryLoggingEventsAppender.getLoggingEvents();
         assertThat(traces).hasSize(1);
@@ -133,8 +155,8 @@ public class TestAnnotatedMDCSpring {
 
 
     @Test
-    public void beanMDCMethodCall() {
-        beanMDCComponent.execWithBeanMDC();
+    public void beanMDCParamsMethodCall() {
+        beanMDCComponent.execWithBeanMDCParams();
         List<ILoggingEvent> traces = InMemoryLoggingEventsAppender.getLoggingEvents();
         assertThat(traces).hasSize(1);
         assertThat(traces.get(0).getMDCPropertyMap())
@@ -158,8 +180,8 @@ public class TestAnnotatedMDCSpring {
     }
 
     @Test
-    public void beanMDCAndMethodMDCMix() {
-        beanMDCComponent.execWithBeanMDCAndMethodMDCMix("Value 1", "Value 2");
+    public void beanParamsAndMethodParamsCombined() {
+        beanMDCComponent.execWithBeanParamsAndMethodParamsCombined("Value 1", "Value 2");
         List<ILoggingEvent> traces = InMemoryLoggingEventsAppender.getLoggingEvents();
         assertThat(traces).hasSize(1);
         assertThat(traces.get(0).getMDCPropertyMap())
@@ -171,8 +193,8 @@ public class TestAnnotatedMDCSpring {
     }
 
     @Test
-    public void beanMDCAndNestedMethodMDCMix() {
-        beanMDCComponent.execWithBeanMDCAndNestedMethodMDCMix("Value 1", "Value 2");
+    public void beanMDCAndNestedMethodMDCCombined() {
+        beanMDCComponent.execWithBeanMDCAndNestedMethodMDCCombined("Value 1", "Value 2");
         List<ILoggingEvent> traces = InMemoryLoggingEventsAppender.getLoggingEvents();
         assertThat(traces).hasSize(1);
         assertThat(traces.get(0).getMDCPropertyMap())

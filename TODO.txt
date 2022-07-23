@@ -14,20 +14,21 @@ Ideas and roadmap
 
 [ ] Add support for jboss-log-manager?
 
-[ ] Use Agent or Annotation Processor instead of AOP?
+[?] Use Agent or Annotation Processor instead of AOP?
     https://blog.jcore.com/2016/12/modify-java-8-final-behaviour-with-annotations/
+    Java TreeTranslator is a compiler's internal API!
 
 [ ] Copy MDC state to another MDC context.
     [ ] Add support for Spring @Async annotation
 
 [x] Parent-child parameters overwrite: when the child MDC is closed restore parent's params values that were overwritten by child MDC
 
-[ ] In addition to try-with-resources add lambdas-based methods to MDC interface that open new MDC and run the task specified as lambda.
-
 [ ] Document all public API
 
-[ ] How to maintain method arguments' names after compilation (debug information)
-    - remove @MDCParam.include
+[x] How to maintain method arguments' names after compilation (debug information)
+    Add -parameters argument to javac.
+    Already resolved in Spring Boot Plugin
+    https://docs.spring.io/spring-boot/docs/current/maven-plugin/reference/htmlsingle/
 
 [ ] Class MDC: add lambda-based MDC definitions:
     MDC.with()
@@ -39,3 +40,14 @@ Ideas and roadmap
     MDC.runWith(() -> {
         ...
     })
+
+[ ] Add MDC.rootParam() to put param into root MDC.
+
+[x] Refactor annotations: allow multiple @MDCParam annotations on method or bean.
+    @MDCParam(name = "param1", eval = "...");
+    @MDCParam(name = "param2", eval = "...");
+    public void myMethod(@MDCParam param3)
+
+[ ] Behavioral changes: create new MDC context only with explicit definition @WithMDC.
+    Any call to a method annotated with @MDCParam and without @WithMDC will set parameters on current MDC.
+    After the method exits all parameters must be removed explicitly.

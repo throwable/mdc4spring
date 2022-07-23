@@ -2,7 +2,7 @@ package com.github.throwable.mdc4spring.spring;
 
 import com.github.throwable.mdc4spring.CloseableMDC;
 import com.github.throwable.mdc4spring.MDC;
-import com.github.throwable.mdc4spring.util.AnnotatedMethodMDCParamsResolver;
+import com.github.throwable.mdc4spring.util.AnnotatedMethodMDCParamsEvaluator;
 import com.github.throwable.mdc4spring.util.ExpressionEvaluator;
 import com.github.throwable.mdc4spring.util.MethodInvocationMDCParametersValues;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -20,18 +20,24 @@ import java.util.Objects;
 @Aspect
 @Component
 public class WithMDCAspect {
-    private final AnnotatedMethodMDCParamsResolver annotatedMethodMDCParamsResolver;
+    private final AnnotatedMethodMDCParamsEvaluator annotatedMethodMDCParamsEvaluator;
 
     @Autowired
     public WithMDCAspect(ExpressionEvaluator expressionEvaluator) {
         DefaultParameterNameDiscoverer parameterNameDiscoverer = new DefaultParameterNameDiscoverer();
-        //SpelExpressionEvaluator expressionEvaluator = new SpelExpressionEvaluator();
-        this.annotatedMethodMDCParamsResolver = new AnnotatedMethodMDCParamsResolver(
+        this.annotatedMethodMDCParamsEvaluator = new AnnotatedMethodMDCParamsEvaluator(
                 parameterNameDiscoverer::getParameterNames, expressionEvaluator);
     }
 
+    // https://www.faqcode4u.com/faq/214039/aspectj-pointcut-expression-match-parameter-annotations-at-any-position
     @Around("@annotation(com.github.throwable.mdc4spring.anno.WithMDC) || " +
-            "@within(com.github.throwable.mdc4spring.anno.WithMDC)")
+            "@annotation(com.github.throwable.mdc4spring.anno.MDCParam) || " +
+            "@annotation(com.github.throwable.mdc4spring.anno.MDCParams) || " +
+            "@within(com.github.throwable.mdc4spring.anno.WithMDC) || " +
+            "@within(com.github.throwable.mdc4spring.anno.MDCParam) || " +
+            "@within(com.github.throwable.mdc4spring.anno.MDCParams) ||" +
+            "execution(public * *(.., @com.github.throwable.mdc4spring.anno.MDCParam (*), ..))"
+    )
     public Object invokeWithMDC(ProceedingJoinPoint joinPoint) throws Throwable {
         Object unproxiedTarget = joinPoint.getTarget();
         while (AopUtils.isAopProxy(unproxiedTarget) && unproxiedTarget instanceof Advised) {
@@ -40,19 +46,21 @@ public class WithMDCAspect {
 
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
         MethodInvocationMDCParametersValues methodInvocationMdcParamValues =
-                annotatedMethodMDCParamsResolver.resolveMethodInvocationMDCParamValues(
+                annotatedMethodMDCParamsEvaluator.evalMethodInvocationMDCParamValues(
                         signature.getMethod(), unproxiedTarget, joinPoint.getArgs());
 
-        if (methodInvocationMdcParamValues.getBeanMDCNamespace() != null &&
-                methodInvocationMdcParamValues.getMethodMDCNamespace() != null &&
-                !Objects.equals(
-                    methodInvocationMdcParamValues.getBeanMDCNamespace(),
-                    methodInvocationMdcParamValues.getMethodMDCNamespace()
-                )
-        ) {
+        if (methodInvocationMdcParamValues == null)
+            // Not supposed to be here: wrong PointCut configuration?
+            return joinPoint.proceed();
+
+        if (!Objects.equals(
+                methodInvocationMdcParamValues.getBeanMDCNamespace(),
+                methodInvocationMdcParamValues.getMethodMDCNamespace()
+            ))
+        {
             // Bean and method scope namespaces are different.
             // Create two separate MDCs: one for bean-level and another one for method-level,
-            // add corresponding parameters
+            // for each one add their corresponding parameters.
             try (CloseableMDC beanMdc = MDC.create(methodInvocationMdcParamValues.getBeanMDCNamespace())) {
                 methodInvocationMdcParamValues.getBeanMDCParamValues()
                         .forEach(beanMdc::put);
@@ -64,12 +72,13 @@ public class WithMDCAspect {
                 }
             }
         } else {
-            // Either bean or method scope was defined or they both are using the same namespace.
-            // Create one MDCs for both.
+            // Bean and method scope namespaces are the same.
+            // Create a unique MDCs containing both bean and method parameters.
             String namespace = methodInvocationMdcParamValues.getBeanMDCNamespace() != null ?
                     methodInvocationMdcParamValues.getBeanMDCNamespace() :
                     methodInvocationMdcParamValues.getMethodMDCNamespace();
-            assert namespace != null;
+            if (namespace == null)
+                namespace = "";
 
             try (CloseableMDC mdc = MDC.create(namespace)) {
                 methodInvocationMdcParamValues.getBeanMDCParamValues()

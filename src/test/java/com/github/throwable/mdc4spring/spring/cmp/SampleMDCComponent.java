@@ -56,35 +56,38 @@ public class SampleMDCComponent {
         log.info("After nested MDC");
     }
 
-    @WithMDC(parameters = {
-            @MDCParam(name = "keyParam1", eval = "'Sample string'"),
-            @MDCParam(name = "keyParam2", eval = "'Number ' + 5")
-    })
-    public void execWithMDCWithFixedParameters() {
+    @MDCParam(name = "keyParam1", eval = "'Sample string'")
+    public void execWithMethodOnlyMDCParameter() {
+        log.info("Only one parameter");
+    }
+
+    @MDCParam(name = "keyParam1", eval = "'Sample string'")
+    @MDCParam(name = "keyParam2", eval = "'Number ' + 5")
+    public void execWithFixedMDCParameters() {
         log.info("Fixed parameters");
     }
 
-    @WithMDC(parameters = {
-            @MDCParam(name = "localFieldParam", eval = "sampleFieldValue"),
-            @MDCParam(name = "localAccessorParam", eval = "sampleAccessorValue"),
-            @MDCParam(name = "localMethodParam", eval = "'Transformed: ' + sampleMethodValue(sampleFieldValue)"),
-            @MDCParam(name = "environmentProperty", eval = "#environment['sample.property']"),
-            @MDCParam(name = "systemProperty", eval = "#systemProperties['user.home']"),
-            @MDCParam(name = "externalParameterBeanValue", eval = "@externalParameterBean.externalBeanValue"),
-    })
-    public void execWithMDCWithReferencedParameters() {
+    @MDCParam(name = "localFieldParam", eval = "sampleFieldValue")
+    @MDCParam(name = "localAccessorParam", eval = "sampleAccessorValue")
+    @MDCParam(name = "localMethodParam", eval = "'Transformed: ' + sampleMethodValue(sampleFieldValue)")
+    @MDCParam(name = "environmentProperty", eval = "#environment['sample.property']")
+    @MDCParam(name = "systemProperty", eval = "#systemProperties['user.home']")
+    @MDCParam(name = "externalParameterBeanValue", eval = "@externalParameterBean.externalBeanValue")
+    public void execWithMDCParametersReferencingContext() {
         log.info("Parameters referencing local bean and environment");
     }
 
+    public void execWithMethodArgumentAsMDCParameter(@MDCParam String param1, String param2)
+    {
+        log.info("Argument as MDC parameter");
+    }
 
-    @WithMDC(parameters = {
-            @MDCParam(name = "concatAllArgumentsParam", eval = "#param1 + #param2 + #param3 + #clazz + #notIncluded")
-    })
-    public void execWithMDCWithArgumentsAsParameters(@MDCParam String param1,
-                                                     @MDCParam("param2") int myArg,
-                                                     @MDCParam BigDecimal param3,
-                                                     @MDCParam(eval = "name") Class<?> clazz,
-                                                     String notIncluded)
+    @MDCParam(name = "concatAllArgumentsParam", eval = "#param1 + #param2 + #param3 + #clazz + #notIncluded")
+    public void execWithMethodArgumentsAsMDCParameters(@MDCParam String param1,
+                                                       @MDCParam("param2") int myArg,
+                                                       @MDCParam BigDecimal param3,
+                                                       @MDCParam(eval = "name") Class<?> clazz,
+                                                       String notIncluded)
     {
         log.info("Arguments as MDC parameters");
     }

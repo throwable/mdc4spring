@@ -5,19 +5,55 @@ import org.springframework.core.annotation.AliasFor;
 import java.lang.annotation.*;
 
 /**
- * Define MDC parameter for method's invocation scope.
- * The annotation may be applied to method's argument or may be used inside {@literal @}WithMDC annotation parameter list.
+ * Defines an MDC parameter for current method's invocation scope. The parameter will be present in all logging traces
+ * occurred inside the method. After the method returns all defined parameters will be automatically removed from current MDC
+ * and later logging traces.
  * <p>
- * When annotating method's argument a new parameter is created in method's MDC using argument's name and value.
- * You also can specify alternative parameter's name or define an expression that will transform argument's original value.
+ * The annotation may be set at method level, at bean level or for any of method's arguments.
+ * <p>
+ * <h3>Annotating method arguments</h3>
+ * When <code>{@literal @}MDCParam</code> annotates method argument, a new parameter will be included to the method MDC
+ * during method invocation. By default, the parameter will have the same name as the argument and the value the method invoked with.
+ * Alternatively you can specify a custom name for the parameter or define an expression that converts its original value.
+ * <p>
+ * <h3>Annotating methods</h3>
+ * When annotating a method with <code>{@literal @}MDCParam</code> you can define additional parameters that will be
+ * included to MDC during the method invocation. For each parameter you need to specify a unique name and an expression
+ * that will be evaluated to obtain parameter's value.
+ * The evaluation context contains references to:
+ * <ul>
+ *     <li>Local bean as <code>#root</code> object. You have access to bean's private fields and properties.</li>
+ *     <li>All method's invocation values referenced by <code>#argumentName</code> variables.</li>
+ *     <li>Spring configuration properties available in <code>#environment</code> map.</li>
+ *     <li>System properties referenced by <code>#systemProperties</code> variable.</li>
+ * </ul>
+ * <p>
+ * For more information please refer to <a href="https://docs.spring.io/spring-framework/docs/current/reference/html/core.html#expressions">Spring Expression Language</a> documentation.
+ * <p>
+ * <h3>Annotating beans</h3>
+ * The <code>{@literal @}MDCParam</code> annotation set at bean level has the same effect as it will be applied to all bean's public methods.
+ * <p>
+ * <b>Note that this annotation only works for bean public methods that are invoked from outside the bean scope, and
+ * will have no effect on any local method invocation.</b>
+ * <p>
+ * Sample usage:
+ * <blockquote><pre>
+ * {@literal @}MDCParam(name = "transaction.id", eval = "#order.transactionId"),
+ * {@literal @}MDCParam(name = "client.id", eval = "#order.clientId")
+ *  public void createOrder(Order order,
+ *                         {@literal @}MDCParam(eval = "name") Queue queue,
+ *                         {@literal @}MDCParam Priority priority,
+ *                         {@literal @}MDCParam("user.id") String userId)
+ * </pre></blockquote>
  * @see WithMDC
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.PARAMETER})
+@Target({ElementType.TYPE, ElementType.METHOD, ElementType.PARAMETER})
+@Repeatable(MDCParams.class)
 public @interface MDCParam {
     /**
-     * Parameter's name. Is optional for method's argument annotation. By default, an argument's name is used.
+     * Parameter's name. Optional for method argument annotation, required for method and bean-level annotations.
      */
     @AliasFor("value")
     String name() default "";
@@ -30,7 +66,7 @@ public @interface MDCParam {
 
     /**
      * Expression to evaluate.
-     * When annotating method's argument an argument's value will be used as expression's <code>#root</code> object.
+     * For more information please refer to <a href="https://docs.spring.io/spring-framework/docs/current/reference/html/core.html#expressions">Spring Expression Language</a> documentation.
      */
     String eval() default "";
 }

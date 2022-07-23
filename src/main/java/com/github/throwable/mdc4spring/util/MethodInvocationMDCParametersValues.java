@@ -6,14 +6,14 @@ import java.util.Map;
 
 public class MethodInvocationMDCParametersValues {
 
-    @Nullable private final String beanMDCNamespace;
+    private final String beanMDCNamespace;
     private final Map<String, Object> beanMDCParamValues;
-    @Nullable private final String methodMDCNamespace;
+    private final String methodMDCNamespace;
     private final Map<String, Object> methodMDCParamValues;
 
-    public MethodInvocationMDCParametersValues(@Nullable String beanMDCNamespace,
+    public MethodInvocationMDCParametersValues(String beanMDCNamespace,
                                                Map<String, Object> beanMDCParamValues,
-                                               @Nullable String methodMDCNamespace,
+                                               String methodMDCNamespace,
                                                Map<String, Object> methodMDCParamValues)
     {
         this.beanMDCNamespace = beanMDCNamespace;
@@ -23,12 +23,10 @@ public class MethodInvocationMDCParametersValues {
     }
 
 
-    @Nullable
     public String getMethodMDCNamespace() {
         return methodMDCNamespace;
     }
 
-    @Nullable
     public String getBeanMDCNamespace() {
         return beanMDCNamespace;
     }
