@@ -99,7 +99,7 @@ public interface MDC {
     }
 
     /**
-     * Set parameter value in closest MDC. The method is equivalent to <code>MDC.current().put(key, value)</code>.
+     * Set parameter value in closest MDC. The method is equivalent to <code>MDC.current().put(name, value)</code>.
      * @param name parameter's name
      * @param value parameter's value
      * @throws IllegalArgumentException if parameter name is null
@@ -107,6 +107,17 @@ public interface MDC {
      */
     static void param(String name, Object value) throws IllegalArgumentException, IllegalStateException {
         CloseableMDC.param(name, value);
+    }
+
+    /**
+     * Set parameter value in root MDC. The method is equivalent to <code>MDC.root().put(name, value)</code>.
+     * @param name parameter's name
+     * @param value parameter's value
+     * @throws IllegalArgumentException if parameter name is null
+     * @throws IllegalStateException if no MDC defined at current execution scope.
+     */
+    static void rootParam(String name, Object value) throws IllegalArgumentException, IllegalStateException {
+        CloseableMDC.rootParam(name, value);
     }
 
     /**

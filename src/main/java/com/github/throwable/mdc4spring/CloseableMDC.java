@@ -80,8 +80,13 @@ public class CloseableMDC implements AutoCloseable, MDC {
     }
 
     @SuppressWarnings("resource")
-    public static void param(String key, Object val) {
-        current().put(key, val);
+    public static void param(String name, Object value) {
+        current().put(name, value);
+    }
+
+    @SuppressWarnings("resource")
+    public static void rootParam(String name, Object value) {
+        root().put(name, value);
     }
 
     @Override

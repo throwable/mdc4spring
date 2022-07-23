@@ -118,4 +118,19 @@ public class TestMDCCore {
                 .as("Must fail when closing already closed MDC")
                 .isInstanceOf(IllegalStateException.class);
     }
+
+    @Test
+    public void rootParamTest() {
+        try (CloseableMDC rootMDC = MDC.create()) {
+            try (CloseableMDC mdc2 = MDC.create()) {
+                try (CloseableMDC mdc3 = MDC.create()) {
+                    MDC.param("localParam", "localValue");
+                    MDC.rootParam("rootParam", "rootParamValue");
+                }
+            }
+            assertThat(mdcAdapter.getMap())
+                    .containsEntry("rootParam", "rootParamValue")
+                    .doesNotContainKey("localParam");
+        }
+    }
 }

@@ -25,6 +25,8 @@ Ideas and roadmap
 
 [ ] Document all public API
 
+[ ] Readme.md
+
 [x] How to maintain method arguments' names after compilation (debug information)
     Add -parameters argument to javac.
     Already resolved in Spring Boot Plugin
@@ -41,7 +43,7 @@ Ideas and roadmap
         ...
     })
 
-[ ] Add MDC.rootParam() to put param into root MDC.
+[x] Add MDC.rootParam() to put param into root MDC.
 
 [x] Refactor annotations: allow multiple @MDCParam annotations on method or bean.
     @MDCParam(name = "param1", eval = "...");
