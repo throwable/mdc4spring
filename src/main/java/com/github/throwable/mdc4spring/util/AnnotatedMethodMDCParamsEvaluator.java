@@ -11,6 +11,9 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
+/**
+ * Class that resolves a method MDC configuration and evaluates MDC parameters for a method invocation.
+ */
 public class AnnotatedMethodMDCParamsEvaluator {
     private static final ConcurrentHashMap<String, AnnotatedMethodConfig> annotatedMethodConfigCache = new ConcurrentHashMap<>();
 
@@ -24,6 +27,13 @@ public class AnnotatedMethodMDCParamsEvaluator {
         this.expressionEvaluator = expressionEvaluator;
     }
 
+    /**
+     * Evaluate method MDC parameters for a particular method invocation.
+     * @param method method to invoke
+     * @param target target object instance
+     * @param args method arguments values
+     * @return method's MDC configuration and evaluated parameters with their values
+     */
     @Nullable
     public MethodInvocationMDCParametersValues evalMethodInvocationMDCParamValues(Method method, Object target, Object[] args) {
         AnnotatedMethodConfig annotatedMethodConfig = resolveAnnotatedMethodConfig(method);

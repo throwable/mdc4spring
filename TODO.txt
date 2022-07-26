@@ -23,7 +23,7 @@ Ideas and roadmap
 
 [x] Parent-child parameters overwrite: when the child MDC is closed restore parent's params values that were overwritten by child MDC
 
-[ ] Document all public API
+[x] Document all public API
 
 [ ] Readme.md
 
@@ -54,4 +54,10 @@ Ideas and roadmap
     Any call to a method annotated with @MDCParam and without @WithMDC will set parameters on current MDC.
     After the method exits all parameters must be removed explicitly.
 
-[ ] Refactor detection of logging subsystem
+[x] Refactor detection of logging subsystem
+
+[x] Support for local calls.
+    - Using AspectJ?
+        AspectJ uses compile-time or runtime weaving. In first case it requires a maven plugin to enhance classes.
+        In second case it requires an agent specified at JVM start. Both of them significally complicate the usage.
+    [x] Try: Spring AOP also intercepts protected and package-private methods?

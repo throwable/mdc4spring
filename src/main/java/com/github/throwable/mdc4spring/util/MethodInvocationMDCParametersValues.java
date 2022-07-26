@@ -4,6 +4,9 @@ import org.springframework.lang.Nullable;
 
 import java.util.Map;
 
+/**
+ * Evaluated MDC parameters for method invocation
+ */
 public class MethodInvocationMDCParametersValues {
     @Nullable private final String beanMDCNamespace;
     private final Map<String, Object> beanMDCParamValues;

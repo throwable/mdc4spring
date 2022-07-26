@@ -19,6 +19,7 @@ import java.util.Objects;
 
 @Aspect
 @Component
+@SuppressWarnings("unused")
 public class WithMDCAspect {
     private final AnnotatedMethodMDCParamsEvaluator annotatedMethodMDCParamsEvaluator;
 
@@ -36,7 +37,7 @@ public class WithMDCAspect {
             "@within(com.github.throwable.mdc4spring.anno.WithMDC) || " +
             "@within(com.github.throwable.mdc4spring.anno.MDCParam) || " +
             "@within(com.github.throwable.mdc4spring.anno.MDCParams) ||" +
-            "execution(public * *(.., @com.github.throwable.mdc4spring.anno.MDCParam (*), ..))"
+            "execution(* *(.., @com.github.throwable.mdc4spring.anno.MDCParam (*), ..))"
     )
     public Object invokeWithMDC(ProceedingJoinPoint joinPoint) throws Throwable {
         Object unproxiedTarget = joinPoint.getTarget();

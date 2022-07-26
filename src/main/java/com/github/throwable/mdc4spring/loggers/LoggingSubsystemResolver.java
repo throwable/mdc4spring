@@ -4,6 +4,11 @@ import java.lang.reflect.InvocationTargetException;
 
 public class LoggingSubsystemResolver {
 
+    /**
+     * Resolve logging system using classpath or set up custom implementation specified in LoggerMDCAdapter.MDC_ADAPTER_SYSTEM_PROPERTY
+     * system property.
+     * @return logging system MDC adapter
+     */
     public static LoggerMDCAdapter resolveMDCAdapter() {
         if (System.getProperty(LoggerMDCAdapter.MDC_ADAPTER_SYSTEM_PROPERTY) != null) {
             String adapterClazz = System.getProperty(LoggerMDCAdapter.MDC_ADAPTER_SYSTEM_PROPERTY);
@@ -18,15 +23,12 @@ public class LoggingSubsystemResolver {
         }
 
         if (classExistsInClasspath("org.slf4j.Logger")) {
-            slf4JGreeting();
             return new Slf4JLoggerMDCAdapter();
         }
         else if (classExistsInClasspath("org.apache.logging.log4j.Logger")) {
-            log4J2Greeting();
             return new Log4J2LoggerMDCAdapter();
         }
         else if (classExistsInClasspath("org.apache.log4j.Logger")) {
-            log4JGreeting();
             return new Log4JLoggerMDCAdapter();
         }
         else {
@@ -42,17 +44,5 @@ public class LoggingSubsystemResolver {
         } catch (ClassNotFoundException e) {
             return false;
         }
-    }
-
-    private static void log4JGreeting() {
-        org.apache.log4j.LogManager.getLogger(LoggingSubsystemResolver.class).debug("MDC4Spring is configured to use with Log4J");
-    }
-
-    private static void log4J2Greeting() {
-        org.apache.logging.log4j.LogManager.getLogger(LoggingSubsystemResolver.class).debug("MDC4Spring is configured to use with Log4J2");
-    }
-
-    private static void slf4JGreeting() {
-        org.slf4j.LoggerFactory.getLogger(LoggingSubsystemResolver.class).debug("MDC4Spring is configured to use with Slf4J");
     }
 }

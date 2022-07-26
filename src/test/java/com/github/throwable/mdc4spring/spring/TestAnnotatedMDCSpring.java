@@ -233,4 +233,36 @@ public class TestAnnotatedMDCSpring {
                 .containsEntry("nestedScope.param1", "Value 1")
                 .containsEntry("nestedScope.anotherProperty", "Fixed value");
     }
+
+    @Test
+    public void callsToLocalNonPublicMethods() {
+        sampleMDCComponent.execLocalNonPublicMethods();
+        List<ILoggingEvent> traces = InMemoryLoggingEventsAppender.getLoggingEvents();
+        assertThat(traces).hasSize(3);
+        assertThat(traces.get(0).getMDCPropertyMap())
+                .as("Local calls are not instrumented by Spring AOP")
+                .isEmpty();
+        assertThat(traces.get(1).getMDCPropertyMap())
+                .as("Local calls are not instrumented by Spring AOP")
+                .isEmpty();
+        assertThat(traces.get(2).getMDCPropertyMap())
+                .as("Local calls are not instrumented by Spring AOP")
+                .isEmpty();
+    }
+
+    @Test
+    public void callsToRemoteNonPublicMethods() {
+        sampleMDCComponent.execRemoteNonPublicMethods();
+        List<ILoggingEvent> traces = InMemoryLoggingEventsAppender.getLoggingEvents();
+        assertThat(traces).hasSize(3);
+        assertThat(traces.get(0).getMDCPropertyMap())
+                .hasSize(1)
+                .containsEntry("scope", "package-private");
+        assertThat(traces.get(1).getMDCPropertyMap())
+                .hasSize(1)
+                .containsEntry("scope", "protected");
+        assertThat(traces.get(2).getMDCPropertyMap())
+                .as("Spring AOP does not instrument private methods")
+                .isEmpty();
+    }
 }

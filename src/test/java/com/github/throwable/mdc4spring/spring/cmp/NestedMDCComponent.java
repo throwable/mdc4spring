@@ -28,4 +28,14 @@ public class NestedMDCComponent {
         MDC.param("param2", "value2");
         log.info("Inside method call");
     }
+
+    @WithMDC
+    void samplePackagePrivateMethod(@MDCParam String scope) {
+        log.info("Package-private method");
+    }
+
+    @WithMDC
+    protected void sampleProtectedMethod(@MDCParam String scope) {
+        log.info("Protected method");
+    }
 }

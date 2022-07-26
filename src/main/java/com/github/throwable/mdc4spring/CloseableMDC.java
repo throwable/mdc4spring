@@ -6,6 +6,9 @@ import com.github.throwable.mdc4spring.loggers.LoggingSubsystemResolver;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+/**
+ * A MDC implementation. Additionally, it implements an AutoCloseable interface to use in try-with-resources block.
+ */
 public class CloseableMDC implements AutoCloseable, MDC {
 
     private static final ThreadLocal<CloseableMDC> currentMdc = new ThreadLocal<>();

@@ -12,11 +12,13 @@ import java.math.BigDecimal;
 import static com.github.throwable.mdc4spring.MDC.current;
 
 @Service
+@SuppressWarnings({"unused", "SameParameterValue"})
 public class SampleMDCComponent {
     private final static Logger log = LoggerFactory.getLogger(SampleMDCComponent.class);
 
     @Autowired
     NestedMDCComponent nestedMDCComponent;
+    @Autowired InnerMDCComponent innerMDCComponent;
 
     private final String sampleFieldValue = "Sample local field value";
 
@@ -107,5 +109,54 @@ public class SampleMDCComponent {
                                                        String notIncluded)
     {
         log.info("Arguments as MDC parameters");
+    }
+
+    @WithMDC
+    public void execLocalNonPublicMethods() {
+        samplePackagePrivateMethod("package-private");
+        sampleProtectedMethod("protected");
+        samplePrivateMethod("private");
+    }
+
+
+    @WithMDC
+    void samplePackagePrivateMethod(@MDCParam String scope) {
+        log.info("Package-private method");
+    }
+
+    @WithMDC
+    protected void sampleProtectedMethod(@MDCParam String scope) {
+        log.info("Protected method");
+    }
+
+    @WithMDC
+    private void samplePrivateMethod(@MDCParam String scope) {
+        log.info("Private method");
+    }
+
+    @WithMDC
+    public void execRemoteNonPublicMethods() {
+        innerMDCComponent.samplePackagePrivateMethod("package-private");
+        innerMDCComponent.sampleProtectedMethod("protected");
+        innerMDCComponent.samplePrivateMethod("private");
+    }
+
+
+    @Service
+    public static class InnerMDCComponent {
+        @WithMDC
+        void samplePackagePrivateMethod(@MDCParam String scope) {
+            log.info("Package-private method");
+        }
+
+        @WithMDC
+        protected void sampleProtectedMethod(@MDCParam String scope) {
+            log.info("Protected method");
+        }
+
+        @WithMDC
+        private void samplePrivateMethod(@MDCParam String scope) {
+            log.info("Private method");
+        }
     }
 }
