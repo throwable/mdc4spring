@@ -2,9 +2,9 @@ Ideas and roadmap
 -----------------
 [x] Add #systemProperties variable
 
-[ ] ELK adds an automatic correlation to MDC using agent instrumentation:
+[-] ELK adds an automatic correlation to MDC using agent instrumentation:
     https://www.elastic.co/guide/en/apm/agent/java/current/log-correlation.html.
-    Adds these MDC parameters are automátically added:
+    Adds these MDC parameters are automatically added:
         - transaction.id
         - trace.id
         - error.id
@@ -61,3 +61,5 @@ Ideas and roadmap
         AspectJ uses compile-time or runtime weaving. In first case it requires a maven plugin to enhance classes.
         In second case it requires an agent specified at JVM start. Both of them significally complicate the usage.
     [x] Try: Spring AOP also intercepts protected and package-private methods?
+
+[x] Add "#className" and "#methodName" to the evaluation context variable

@@ -90,6 +90,7 @@ public class SampleMDCComponent {
     @MDCParam(name = "environmentProperty", eval = "#environment['sample.property']")
     @MDCParam(name = "systemProperty", eval = "#systemProperties['user.home']")
     @MDCParam(name = "externalParameterBeanValue", eval = "@externalParameterBean.externalBeanValue")
+    @MDCParam(name = "method", eval = "#className + '/' + #methodName")
     public void execWithMDCParametersReferencingContext() {
         log.info("Parameters referencing local bean and environment");
     }

@@ -144,13 +144,14 @@ public class TestAnnotatedMDCSpring {
         List<ILoggingEvent> traces = InMemoryLoggingEventsAppender.getLoggingEvents();
         assertThat(traces).hasSize(1);
         assertThat(traces.get(0).getMDCPropertyMap())
-                .hasSize(6)
+                .hasSize(7)
                 .containsEntry("localFieldParam", "Sample local field value")
                 .containsEntry("localAccessorParam", "Sample accessor value")
                 .containsEntry("localMethodParam", "Transformed: SAMPLE LOCAL FIELD VALUE")
                 .containsEntry("environmentProperty", "Environment property value")
                 .containsKey("systemProperty")
-                .containsEntry("externalParameterBeanValue", "Sample external bean value");
+                .containsEntry("externalParameterBeanValue", "Sample external bean value")
+                .containsEntry("method", "com.github.throwable.mdc4spring.spring.cmp.SampleMDCComponent/execWithMDCParametersReferencingContext");
     }
 
 

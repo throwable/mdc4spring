@@ -35,7 +35,9 @@ public class AnnotatedMethodMDCParamsEvaluator {
      * @return method's MDC configuration and evaluated parameters with their values
      */
     @Nullable
-    public MethodInvocationMDCParametersValues evalMethodInvocationMDCParamValues(Method method, Object target, Object[] args) {
+    public MethodInvocationMDCParametersValues evalMethodInvocationMDCParamValues(
+            Method method, Object target, Object[] args)
+    {
         AnnotatedMethodConfig annotatedMethodConfig = resolveAnnotatedMethodConfig(method);
         if (annotatedMethodConfig == null)
             return null;
@@ -48,7 +50,8 @@ public class AnnotatedMethodMDCParamsEvaluator {
                 String paramName = !parameter.name().isEmpty() ? parameter.name() : parameter.value();
                 if (paramName.isEmpty()/* || !parameter.include()*/)
                     continue;
-                Object expressionResult = evaluateExpression(parameter.eval(), target, null);
+                Object expressionResult = evaluateExpression(parameter.eval(), target, null,
+                        annotatedMethodConfig.getExpressionStaticVariables());
                 beanMDCParamValues.put(paramName, expressionResult);
             }
         }
@@ -68,7 +71,8 @@ public class AnnotatedMethodMDCParamsEvaluator {
                 if (parameter.eval().isEmpty())
                     expressionResult = argumentValue;
                 else
-                    expressionResult = evaluateExpression(parameter.eval(), argumentValue, null);
+                    expressionResult = evaluateExpression(parameter.eval(), argumentValue, null,
+                            annotatedMethodConfig.getExpressionStaticVariables());
                 methodMDCParamValues.put(paramName, expressionResult);
             }
         }
@@ -93,7 +97,8 @@ public class AnnotatedMethodMDCParamsEvaluator {
                 String paramName = !parameter.name().isEmpty() ? parameter.name() : parameter.value();
                 if (paramName.isEmpty()/* || !parameter.include()*/)
                     continue;
-                Object expressionResult = evaluateExpression(parameter.eval(), target, argumentValues);
+                Object expressionResult = evaluateExpression(parameter.eval(), target, argumentValues,
+                        annotatedMethodConfig.getExpressionStaticVariables());
                 methodMDCParamValues.put(paramName, expressionResult);
             }
         }
@@ -111,9 +116,11 @@ public class AnnotatedMethodMDCParamsEvaluator {
         );
     }
 
-    private Object evaluateExpression(String expression, Object root, @Nullable Map<String, Object> argumentValues) {
+    private Object evaluateExpression(String expression, Object root,
+                                      @Nullable Map<String, Object> argumentValues,
+                                      Map<String, Object> environmentVariables) {
         try {
-            return expressionEvaluator.evaluate(expression, root, argumentValues);
+            return expressionEvaluator.evaluate(expression, root, argumentValues, environmentVariables);
         } catch (Exception e) {
             return "#EVALUATION ERROR#: " + e.getMessage();
         }
@@ -171,7 +178,12 @@ public class AnnotatedMethodMDCParamsEvaluator {
                     mdcParamMap.put(parameterName, mdcParam);
             }
 
-            config = new AnnotatedMethodConfig(beanMDCAnno, methodMDCAnno, beanMDCParamAnnotations, methodMDCParamAnnotations, argumentsNames, mdcParamMap);
+            final HashMap<String, Object> expressionStaticVariables = new HashMap<>();
+            expressionStaticVariables.put("methodName", method.getName());
+            expressionStaticVariables.put("className", method.getDeclaringClass().getName());
+
+            config = new AnnotatedMethodConfig(beanMDCAnno, methodMDCAnno, beanMDCParamAnnotations,
+                    methodMDCParamAnnotations, argumentsNames, mdcParamMap, expressionStaticVariables);
             final AnnotatedMethodConfig configUpdated = annotatedMethodConfigCache.putIfAbsent(methodId, config);
             if (configUpdated != null)
                 config = configUpdated;
@@ -191,16 +203,19 @@ public class AnnotatedMethodMDCParamsEvaluator {
         private final List<String> argumentNames;
         private final Map<String, MDCParam> mdcParamByArgumentName;
         private final Map<String, Integer> argumentIndexByParamName;
+        private final Map<String, Object> expressionStaticVariables;
 
         private AnnotatedMethodConfig(WithMDC beanMDCAnno, WithMDC methodMDCAnno,
                                       List<MDCParam> beanMDCParamAnnotations, List<MDCParam> methodMDCParamAnnotations,
-                                      List<String> argumentNames, Map<String, MDCParam> mdcParamByArgumentName) {
+                                      List<String> argumentNames, Map<String, MDCParam> mdcParamByArgumentName,
+                                      Map<String, Object> expressionStaticVariables) {
             this.beanMDCAnno = beanMDCAnno;
             this.methodMDCAnno = methodMDCAnno;
             this.beanMDCParamAnnotations = Collections.unmodifiableList(beanMDCParamAnnotations);
             this.methodMDCParamAnnotations = Collections.unmodifiableList(methodMDCParamAnnotations);
             this.argumentNames = Collections.unmodifiableList(argumentNames);
             this.mdcParamByArgumentName = Collections.unmodifiableMap(mdcParamByArgumentName);
+            this.expressionStaticVariables = Collections.unmodifiableMap(expressionStaticVariables);
             argumentIndexByParamName = new HashMap<>();
             for (int i = 0; i < argumentNames.size(); i++) {
                 argumentIndexByParamName.put(argumentNames.get(i), i);
@@ -236,6 +251,10 @@ public class AnnotatedMethodMDCParamsEvaluator {
             if (idx == null)
                 throw new IllegalArgumentException("Wrong parameter name: " + paramName);
             return idx;
+        }
+
+        public Map<String, Object> getExpressionStaticVariables() {
+            return expressionStaticVariables;
         }
     }
 }

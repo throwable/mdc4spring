@@ -61,7 +61,10 @@ public class SpelExpressionEvaluator implements ExpressionEvaluator {
     }
 
     @Override
-    public Object evaluate(String expression, Object rootObject, @Nullable Map<String, Object> argumentValues) {
+    public Object evaluate(String expression, Object rootObject,
+                           @Nullable Map<String, Object> argumentValues,
+                           Map<String, Object> expressionVariables)
+    {
         Expression parsedExpression = expressionCache.get(expression);
         if (parsedExpression == null) {
             parsedExpression = expressionParser.parseExpression(expression);
@@ -84,6 +87,7 @@ public class SpelExpressionEvaluator implements ExpressionEvaluator {
             argumentValues.forEach(context::setVariable);
         }
 
+        expressionVariables.forEach(context::setVariable);
         return parsedExpression.getValue(context);
     }
 }

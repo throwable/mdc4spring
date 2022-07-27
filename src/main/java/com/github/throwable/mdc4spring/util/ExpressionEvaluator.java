@@ -11,12 +11,14 @@ import java.util.Map;
 public interface ExpressionEvaluator {
     /**
      * Evaluate expression for an MDC parameter
-     * @param expression expression string to evaluate
-     * @param rootObject in case of annotated method argument a value of that argument, in case of annotated method
-     *                   a local bean instance (unproxied)
-     * @param argumentValues null when evaluating an annotated method argument or all argument values when evaluating annotated
-     *                       method
+     *
+     * @param expression           expression string to evaluate
+     * @param rootObject           in case of annotated method argument a value of that argument, in case of annotated method
+     *                             a local bean instance (unproxied)
+     * @param argumentValues       null when evaluating an annotated method argument or all argument values when evaluating annotated
+     *                             method
+     * @param expressionVariables  additional variables available during expression evaluation
      * @return expression evaluation result
      */
-    Object evaluate(String expression, Object rootObject, @Nullable Map<String, Object> argumentValues);
+    Object evaluate(String expression, Object rootObject, @Nullable Map<String, Object> argumentValues, Map<String, Object> expressionVariables);
 }
