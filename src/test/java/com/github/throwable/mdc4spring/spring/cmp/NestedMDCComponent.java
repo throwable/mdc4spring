@@ -2,12 +2,14 @@ package com.github.throwable.mdc4spring.spring.cmp;
 
 import com.github.throwable.mdc4spring.MDC;
 import com.github.throwable.mdc4spring.anno.MDCParam;
+import com.github.throwable.mdc4spring.anno.MDCOutParam;
 import com.github.throwable.mdc4spring.anno.WithMDC;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import static com.github.throwable.mdc4spring.MDC.current;
 
+@SuppressWarnings({"UnusedReturnValue", "unused"})
 @Service
 public class NestedMDCComponent {
     private final static Logger log = LoggerFactory.getLogger(NestedMDCComponent.class);
@@ -37,5 +39,17 @@ public class NestedMDCComponent {
     @WithMDC
     protected void sampleProtectedMethod(@MDCParam String scope) {
         log.info("Protected method");
+    }
+
+
+    @MDCOutParam(name = "message1", eval = "'Hello, ' + #this")
+    public String returnOutputParameterWithoutNestedMDC() {
+        return "Pete";
+    }
+
+    @WithMDC
+    @MDCOutParam(name = "message2", eval = "'Hello, ' + #this")
+    public String returnOutputParameterWithNestedMDC() {
+        return "Mike";
     }
 }

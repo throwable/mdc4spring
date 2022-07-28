@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.DefaultParameterNameDiscoverer;
 import org.springframework.stereotype.Component;
 
+import java.util.Map;
 import java.util.Objects;
 
 @Aspect
@@ -34,6 +35,8 @@ public class WithMDCAspect {
     @Around("@annotation(com.github.throwable.mdc4spring.anno.WithMDC) || " +
             "@annotation(com.github.throwable.mdc4spring.anno.MDCParam) || " +
             "@annotation(com.github.throwable.mdc4spring.anno.MDCParams) || " +
+            "@annotation(com.github.throwable.mdc4spring.anno.MDCOutParam) || " +
+            "@annotation(com.github.throwable.mdc4spring.anno.MDCOutParams) || " +
             "@within(com.github.throwable.mdc4spring.anno.WithMDC) || " +
             "@within(com.github.throwable.mdc4spring.anno.MDCParam) || " +
             "@within(com.github.throwable.mdc4spring.anno.MDCParams) ||" +
@@ -54,15 +57,16 @@ public class WithMDCAspect {
             // Not supposed to be here: wrong PointCut configuration?
             return joinPoint.proceed();
 
+        final Object result;
+
         if (methodInvocationMdcParamValues.getBeanMDCNamespace() == null && methodInvocationMdcParamValues.getMethodMDCNamespace() == null) {
             if (MDC.hasCurrent()) {
-                return invokeInCurrentMDC(joinPoint, methodInvocationMdcParamValues);
+                result = invokeInCurrentMDC(joinPoint, methodInvocationMdcParamValues);
             } else {
-                return invokeInNewMDC(joinPoint, methodInvocationMdcParamValues);
+                result = invokeInNewMDC(joinPoint, methodInvocationMdcParamValues);
             }
         }
-
-        if (!Objects.equals(
+        else if (!Objects.equals(
                 methodInvocationMdcParamValues.getBeanMDCNamespace(),
                 methodInvocationMdcParamValues.getMethodMDCNamespace()
             ))
@@ -70,12 +74,23 @@ public class WithMDCAspect {
             // Bean and method scope namespaces are different.
             // Create two separate MDCs: one for bean-level and another one for method-level,
             // for each one add their corresponding parameters.
-            return invokeInSeparateMDCs(joinPoint, methodInvocationMdcParamValues);
+            result = invokeInSeparateMDCs(joinPoint, methodInvocationMdcParamValues);
         } else {
             // Bean and method scope namespaces are the same.
             // Create a unique MDCs containing both bean and method parameters.
-            return invokeInNewMDC(joinPoint, methodInvocationMdcParamValues);
+            result = invokeInNewMDC(joinPoint, methodInvocationMdcParamValues);
         }
+
+        // Setting up output parameters to current MDC (if any)
+        if (methodInvocationMdcParamValues.isHasMDCParamOut() && MDC.hasCurrent()) {
+            Map<String, Object> outputParams = annotatedMethodMDCParamsEvaluator.evaluateMethodInvocationOutputParams(
+                    signature.getMethod(), result);
+            if (outputParams != null) {
+                MDC mdc = MDC.current();
+                outputParams.forEach(mdc::put);
+            }
+        }
+        return result;
     }
 
     private Object invokeInNewMDC(ProceedingJoinPoint joinPoint, MethodInvocationMDCParametersValues methodInvocationMdcParamValues) throws Throwable {

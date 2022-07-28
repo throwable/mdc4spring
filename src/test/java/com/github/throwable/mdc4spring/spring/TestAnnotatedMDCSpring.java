@@ -13,7 +13,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import java.math.BigDecimal;
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 @SpringBootTest(
         properties = "sample.property=Environment property value"
@@ -265,5 +265,25 @@ public class TestAnnotatedMDCSpring {
         assertThat(traces.get(2).getMDCPropertyMap())
                 .as("Spring AOP does not instrument private methods")
                 .isEmpty();
+    }
+
+    @Test
+    public void returnOutputParameter() {
+        sampleMDCComponent.returnOutputParameters();
+        List<ILoggingEvent> traces = InMemoryLoggingEventsAppender.getLoggingEvents();
+        assertThat(traces).hasSize(2);
+        assertThat(traces.get(0).getMDCPropertyMap())
+                .hasSize(1)
+                .containsEntry("message1", "Hello, Pete");
+        assertThat(traces.get(1).getMDCPropertyMap())
+                .hasSize(2)
+                .containsEntry("message2", "Hello, Mike");
+    }
+
+    @Test
+    public void returnOutputParameterWithoutScope() {
+        assertThatCode(() ->
+            sampleMDCComponent.returnOutputParameterWithoutScope()
+        ).doesNotThrowAnyException();
     }
 }

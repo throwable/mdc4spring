@@ -6,7 +6,7 @@ import java.lang.annotation.*;
 
 /**
  * Defines a parameter that will be added to current MDC. The parameter will be present in all log messages
- * occurred during method invocation.
+ * occurred during the method invocation.
  * <p>
  * The annotation may be set at method level, at bean level or for any of method arguments.
  * <p>
@@ -68,13 +68,13 @@ import java.lang.annotation.*;
 @Repeatable(MDCParams.class)
 public @interface MDCParam {
     /**
-     * Parameter's name. Optional for method argument annotation, required for method and bean-level annotations.
+     * Parameter name. Optional for method argument annotation, required for method and bean-level annotations.
      */
     @AliasFor("value")
     String name() default "";
 
     /**
-     * Parameter's name. Alias for <code>name</code> attribute.
+     * Parameter name. Alias for <code>name</code> attribute.
      */
     @AliasFor("name")
     String value() default "";

@@ -1,6 +1,7 @@
 package com.github.throwable.mdc4spring.spring.cmp;
 
 import com.github.throwable.mdc4spring.anno.MDCParam;
+import com.github.throwable.mdc4spring.anno.MDCOutParam;
 import com.github.throwable.mdc4spring.anno.WithMDC;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -159,5 +160,17 @@ public class SampleMDCComponent {
         private void samplePrivateMethod(@MDCParam String scope) {
             log.info("Private method");
         }
+    }
+
+    @WithMDC
+    public void returnOutputParameters() {
+        nestedMDCComponent.returnOutputParameterWithoutNestedMDC();
+        log.info("message1 param must be present here");
+        nestedMDCComponent.returnOutputParameterWithNestedMDC();
+        log.info("message2 param must also be present here");
+    }
+
+    @MDCOutParam(name = "test", eval = "'rest'")
+    public void returnOutputParameterWithoutScope() {
     }
 }

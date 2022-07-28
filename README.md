@@ -140,6 +140,8 @@ class OrderProcessor {
 
 The value of any argument can be converted inline using [Spring expression language](https://docs.spring.io/spring-framework/docs/current/reference/html/core.html#expressions).
 In this case ```order.id``` and ```user.id``` parameters will be set to ```order.getId()``` and ```user.getId()``` respectively.
+Note if any error occurs during the expression evaluation the execution will not be interrupted and parameter value will 
+be set to a string like _#EVALUATION ERROR#: exception message_.
 
 ```java
 class OrderProcessor {
@@ -228,7 +230,7 @@ class OrderProcessor {
     public void createOrder(@MDCParam(name = "orderId", eval = "id") Order order) {
         // Call a method using 'nested' MDC
         Customer customer = customerRepository.findCustomerByName(order.getCustomerId());
-        // after the 'nested' MDC call returns the customerId parameter will no longer exist in log messages
+        log.info("after the 'nested' MDC call returns the customerId parameter will no longer exist in log messages");
     }
 }
 class CustomerRepository {
@@ -236,7 +238,7 @@ class CustomerRepository {
     // after the method ends
     @WithMDC
     public Customer findCustomerById(@MDCParam String customerId) {
-        // here the log message will have orderId and customerId parameters defined
+        log.info("this log message will have orderId and customerId parameters defined");
     }
 }
 ```
@@ -250,14 +252,34 @@ class OrderProcessor {
     public void createOrder(@MDCParam(name = "orderId", eval = "id") Order order) {
         // Call a method current MDC
         Customer customer = customerRepository.findCustomerByName(order.getCustomerId());
-        // after the method call we still have a customerId parameter in our MDC
+        log.info("after the method call we still have a customerId parameter in our MDC");
     }
 }
 class CustomerRepository {
     // The parameter customerId will be added to current MDC, and will be kept after the method returns.
     public Customer findCustomerById(@MDCParam String customerId) {
-        // here the log message will have orderId and customerId parameters defined
+        log.info("this log message will have orderId and customerId parameters defined");
     }
+}
+```
+
+#### Method output parameters
+
+With ```@MDCOutParam``` annotation you can define a parameter that will be added to current MDC after the method invocation.
+Its value is evaluated using value returned by this method invocation.
+
+```java
+class OrderProcessor {
+    @WithMDC
+    public void createOrder(Order order) {
+        User user = userRepository.findUserById(order.getUserId());
+        log.info("this log message will have userId, userName and userGroup MDC parameters");
+    }
+}
+class UserRepository {
+    @MDCOutParam(name = "userName", eval = "name")
+    @MDCOutParam(name = "userGroup", eval = "group.name")
+    public User findUserById(@MDCParam String userId) {}
 }
 ```
 

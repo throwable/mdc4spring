@@ -12,16 +12,19 @@ public class MethodInvocationMDCParametersValues {
     private final Map<String, Object> beanMDCParamValues;
     @Nullable private final String methodMDCNamespace;
     private final Map<String, Object> methodMDCParamValues;
+    private final boolean hasMDCParamOut;
 
     public MethodInvocationMDCParametersValues(@Nullable String beanMDCNamespace,
                                                Map<String, Object> beanMDCParamValues,
                                                @Nullable String methodMDCNamespace,
-                                               Map<String, Object> methodMDCParamValues)
+                                               Map<String, Object> methodMDCParamValues,
+                                               boolean hasMDCParamOut)
     {
         this.beanMDCNamespace = beanMDCNamespace;
         this.beanMDCParamValues = beanMDCParamValues;
         this.methodMDCNamespace = methodMDCNamespace;
         this.methodMDCParamValues = methodMDCParamValues;
+        this.hasMDCParamOut = hasMDCParamOut;
     }
 
     @Nullable
@@ -40,5 +43,9 @@ public class MethodInvocationMDCParametersValues {
 
     public Map<String, Object> getMethodMDCParamValues() {
         return methodMDCParamValues;
+    }
+
+    public boolean isHasMDCParamOut() {
+        return hasMDCParamOut;
     }
 }

@@ -63,3 +63,8 @@ Ideas and roadmap
     [x] Try: Spring AOP also intercepts protected and package-private methods?
 
 [x] Add "#className" and "#methodName" to the evaluation context variable
+
+[x] Provide output parameter propagation for 'parent' MDC:
+    public @MDCParam(name = "customerId", eval = "id") Customer findCustomerByClientId()
+
+[ ] Discover subclasses & interfaces for annotations

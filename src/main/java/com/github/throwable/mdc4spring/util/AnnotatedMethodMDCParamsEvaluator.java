@@ -1,8 +1,6 @@
 package com.github.throwable.mdc4spring.util;
 
-import com.github.throwable.mdc4spring.anno.MDCParam;
-import com.github.throwable.mdc4spring.anno.MDCParams;
-import com.github.throwable.mdc4spring.anno.WithMDC;
+import com.github.throwable.mdc4spring.anno.*;
 import org.springframework.lang.Nullable;
 
 import java.lang.annotation.Annotation;
@@ -112,8 +110,29 @@ public class AnnotatedMethodMDCParamsEvaluator {
                 annotatedMethodConfig.getBeanMDCAnno() != null ? annotatedMethodConfig.getBeanMDCAnno().name() : null,
                 beanMDCParamValues,
                 annotatedMethodConfig.getMethodMDCAnno() != null ? annotatedMethodConfig.getMethodMDCAnno().name() : null,
-                methodMDCParamValues
-        );
+                methodMDCParamValues,
+                !annotatedMethodConfig.getMethodMDCParamOutAnnotations().isEmpty());
+    }
+
+    @Nullable
+    public Map<String, Object> evaluateMethodInvocationOutputParams(Method method, Object result) {
+        AnnotatedMethodConfig annotatedMethodConfig = resolveAnnotatedMethodConfig(method);
+        if (annotatedMethodConfig == null)
+            return null;
+
+        Map<String, Object> methodMDCParamOutValues = null;
+
+        if (!annotatedMethodConfig.getMethodMDCParamOutAnnotations().isEmpty()) {
+            methodMDCParamOutValues = new HashMap<>(annotatedMethodConfig.getMethodMDCParamOutAnnotations().size() * 4 / 3 + 1);
+            for (MDCOutParam parameter : annotatedMethodConfig.getMethodMDCParamOutAnnotations()) {
+                if (parameter.name().isEmpty())
+                    continue;
+                Object expressionResult = evaluateExpression(parameter.eval(), result, null,
+                        annotatedMethodConfig.getExpressionStaticVariables());
+                methodMDCParamOutValues.put(parameter.name(), expressionResult);
+            }
+        }
+        return methodMDCParamOutValues;
     }
 
     private Object evaluateExpression(String expression, Object root,
@@ -138,6 +157,9 @@ public class AnnotatedMethodMDCParamsEvaluator {
             final MDCParam beanMDCParamAnno = method.getDeclaringClass().getAnnotation(MDCParam.class);
             final MDCParams methodMDCParamsAnno = method.getAnnotation(MDCParams.class);
             final MDCParams beanMDCParamsAnno = method.getDeclaringClass().getAnnotation(MDCParams.class);
+            final MDCOutParam methodMDCOutParamAnno = method.getAnnotation(MDCOutParam.class);
+            final MDCOutParams methodMDCOutParamsAnno = method.getAnnotation(MDCOutParams.class);
+
 
             final ArrayList<MDCParam> beanMDCParamAnnotations = new ArrayList<>();
             if (beanMDCParamAnno != null)
@@ -151,11 +173,17 @@ public class AnnotatedMethodMDCParamsEvaluator {
             if (methodMDCParamsAnno != null)
                 methodMDCParamAnnotations.addAll(Arrays.asList(methodMDCParamsAnno.value()));
 
+            final ArrayList<MDCOutParam> methodMDCOutParamAnnotations = new ArrayList<>();
+            if (methodMDCOutParamAnno != null)
+                methodMDCOutParamAnnotations.add(methodMDCOutParamAnno);
+            if (methodMDCOutParamsAnno != null)
+                methodMDCOutParamAnnotations.addAll(Arrays.asList(methodMDCOutParamsAnno.value()));
+
             Annotation[][] argumentsAnnotations = method.getParameterAnnotations();
             ArrayList<String> argumentsNames = new ArrayList<>();
             Map<String, MDCParam> mdcParamMap = new HashMap<>();
 
-            // Please note that for successful arguments' names resolution project must me compuled with
+            // Please note that for successful argument names resolution project must be compiled with
             // javac -parameters or using Spring Boot plugin
             String[] argumentsNamesAsDeclared = argumentsNamesDiscoverer.apply(method);
 
@@ -183,7 +211,7 @@ public class AnnotatedMethodMDCParamsEvaluator {
             expressionStaticVariables.put("className", method.getDeclaringClass().getName());
 
             config = new AnnotatedMethodConfig(beanMDCAnno, methodMDCAnno, beanMDCParamAnnotations,
-                    methodMDCParamAnnotations, argumentsNames, mdcParamMap, expressionStaticVariables);
+                    methodMDCParamAnnotations, methodMDCOutParamAnnotations, argumentsNames, mdcParamMap, expressionStaticVariables);
             final AnnotatedMethodConfig configUpdated = annotatedMethodConfigCache.putIfAbsent(methodId, config);
             if (configUpdated != null)
                 config = configUpdated;
@@ -200,6 +228,7 @@ public class AnnotatedMethodMDCParamsEvaluator {
 
         private final List<MDCParam> beanMDCParamAnnotations;
         private final List<MDCParam> methodMDCParamAnnotations;
+        private final List<MDCOutParam> methodMDCOutParamAnnotations;
         private final List<String> argumentNames;
         private final Map<String, MDCParam> mdcParamByArgumentName;
         private final Map<String, Integer> argumentIndexByParamName;
@@ -207,12 +236,14 @@ public class AnnotatedMethodMDCParamsEvaluator {
 
         private AnnotatedMethodConfig(WithMDC beanMDCAnno, WithMDC methodMDCAnno,
                                       List<MDCParam> beanMDCParamAnnotations, List<MDCParam> methodMDCParamAnnotations,
+                                      List<MDCOutParam> methodMDCOutParamAnnotations,
                                       List<String> argumentNames, Map<String, MDCParam> mdcParamByArgumentName,
                                       Map<String, Object> expressionStaticVariables) {
             this.beanMDCAnno = beanMDCAnno;
             this.methodMDCAnno = methodMDCAnno;
             this.beanMDCParamAnnotations = Collections.unmodifiableList(beanMDCParamAnnotations);
             this.methodMDCParamAnnotations = Collections.unmodifiableList(methodMDCParamAnnotations);
+            this.methodMDCOutParamAnnotations = Collections.unmodifiableList(methodMDCOutParamAnnotations);
             this.argumentNames = Collections.unmodifiableList(argumentNames);
             this.mdcParamByArgumentName = Collections.unmodifiableMap(mdcParamByArgumentName);
             this.expressionStaticVariables = Collections.unmodifiableMap(expressionStaticVariables);
@@ -236,6 +267,10 @@ public class AnnotatedMethodMDCParamsEvaluator {
 
         public List<MDCParam> getMethodMDCParamAnnotations() {
             return methodMDCParamAnnotations;
+        }
+
+        public List<MDCOutParam> getMethodMDCParamOutAnnotations() {
+            return methodMDCOutParamAnnotations;
         }
 
         public List<String> getArgumentNames() {
