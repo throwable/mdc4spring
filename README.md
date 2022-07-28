@@ -420,6 +420,7 @@ Please refer to these resources:
 
 ## Roadmap
 
+- [ ] Make library working with annotated interfaces
 - [ ] Save and restore current MDC parameters to raw Map
 - [ ] Intercept @Async calls maintaining the same MDC
 - [ ] Spring WebFlux support?

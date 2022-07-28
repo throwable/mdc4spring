@@ -18,8 +18,8 @@ public @interface MDCOutParam {
     String name();
 
     /**
-     * Expression to evaluate (required). The expression is evaluated using method's return value as #root object.
+     * Expression to evaluate (optional). The expression is evaluated using method's return value as #root object.
      * For more information please refer to <a href="https://docs.spring.io/spring-framework/docs/current/reference/html/core.html#expressions">Spring Expression Language</a> documentation.
      */
-    String eval();
+    String eval() default "#this";
 }
