@@ -25,7 +25,7 @@ Ideas and roadmap
 
 [x] Document all public API
 
-[ ] Readme.md
+[x] Readme.md
 
 [x] How to maintain method arguments' names after compilation (debug information)
     Add -parameters argument to javac.
