@@ -46,9 +46,10 @@ public class MDCInvocationBuilder {
     /**
      * Creates new MDC and runs inside it a task that returns some value.
      * @param task task to run
+     * @param <T> return type
      * @return a value returned by task
      */
-    public <T> T apply(Supplier<T> task) {
+    public <T> T run(Supplier<T> task) {
         try (CloseableMDC mdc = MDC.create(namespace)) {
             if (parameters != null)
                 parameters.forEach(mdc::put);
@@ -59,6 +60,7 @@ public class MDCInvocationBuilder {
     /**
      * Creates new MDC and runs a callable task inside it.
      * @param task task to run
+     * @param <T> return type
      * @return a value returned by callable task
      * @throws Exception exception thrown by callable task
      */

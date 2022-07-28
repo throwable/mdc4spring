@@ -10,11 +10,11 @@ import java.lang.annotation.*;
  * The annotation is applicable to container managed beans, and indicates that the annotated method must be executed inside new MDC.
  * All parameters defined with <code>{@literal @}MDCParam</code> annotation or set explicitly with <code>MDC.param()</code>
  * inside the method's body will belong to this MDC and will automatically be removed after the method returns.
- * <p>
+ * </p><p>
  * If any method annotated with ```WithMDC``` calls another method that has ```@WithMDC``` annotation too,
  * it will create a new 'nested' MDC that will be closed after the method returns removing only parameters defined inside it.
  * Any parameter defined in outer MDC will be also included in log messages.
- * <p>
+ * </p><p>
  * When the annotation is placed at class level it will create a new MDC for all its methods invocations.
  * <h3>Limitations</h3>
  * The library uses Spring AOP to intercept annotated method invocations so these considerations must be token into account:
@@ -31,12 +31,14 @@ public @interface WithMDC {
     /**
      * MDC name (optional).
      * The name will be used as a prefix for all parameters defined inside the MDC scope.
+     * @return MDC name
      */
     @AliasFor("value")
     String name() default "";
 
     /**
      * MDC name (optional). Alias for <code>name</code>.
+     * @return MDC name
      */
     @AliasFor("name")
     String value() default "";

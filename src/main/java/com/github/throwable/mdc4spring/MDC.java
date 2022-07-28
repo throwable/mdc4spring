@@ -121,13 +121,13 @@ public interface MDC {
 
     /**
      * Build new MDC and pass lambda that will be invoked inside it.
-     * <p>
+     * <br><br>
      * Sample usage:
      * <pre>
      * MDC.with("component")
      *         .param("param1", "value1")
      *         .param("param2", "value2")
-     *         .run(() -> {
+     *         .run(() -&gt; {
      *             ...
      *         });
      * </pre>
@@ -146,7 +146,7 @@ public interface MDC {
      * MDC.with("component")
      *         .param("param1", "value1")
      *         .param("param2", "value2")
-     *         .run(() -> {
+     *         .run(() -&gt; {
      *             ...
      *         });
      * </pre>
@@ -168,6 +168,7 @@ public interface MDC {
      * @param name parameter's name
      * @param value parameter's value
      * @throws IllegalArgumentException if parameter's name is null
+     * @return current MDC
      */
     MDC put(String name, Object value) throws IllegalArgumentException;
 
@@ -175,6 +176,7 @@ public interface MDC {
      * Get parameter's value.
      * @param name parameter's name
      * @throws IllegalArgumentException if parameter's name is null
+     * @return parameter value
      */
     Object get(String name) throws IllegalArgumentException;
 
@@ -182,6 +184,7 @@ public interface MDC {
      * Remove parameter from MDC.
      * @param name parameter's name
      * @throws IllegalArgumentException if parameter's name is null
+     * @return current MDC
      */
     MDC remove(String name) throws IllegalArgumentException;
 }

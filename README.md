@@ -11,7 +11,7 @@ _Mapped Diagnostic Context_ provides a way to enrich log messages with contextua
 This information could be useful to track the execution of business operations especially when using ELK stack or any other
 log aggregation system.
 
-Example of Logback logging event that contains MDC (formatted by [JSON-based appender](#Configuring Logback for JSON output)):
+Example of Logback logging event that contains MDC formatted by [JSON-based appender](#configuring-logback-for-json-output):
 
 ```json
 {
@@ -127,7 +127,7 @@ class OrderProcessor {
 }
 ```
 
-By default, argument names will be used as parameter names ([see considerations](# Method argument names)), but you can also define custom names for them.
+By default, argument names will be used as parameter names, [see considerations](#method-argument-names), but you can also define custom names for them.
 
 ```java
 class OrderProcessor {
@@ -220,8 +220,8 @@ class OrderProcessor {
 ```
 
 If any method annotated with ```WithMDC``` calls another method that has ```@WithMDC``` annotation too,
-it will create a new 'nested' MDC that will be closed after the method returns removing only parameters defined inside it
-([see considerations](# Method invocations)).
+it will create a new 'nested' MDC that will be closed after the method returns removing only parameters defined inside it,
+[see considerations](#method-invocations).
 Any parameter defined in outer MDC will be also included in log messages.
 
 ```java
@@ -364,6 +364,7 @@ There are three ways to avoid this problem:
 
 ## Acknowledgements
 
+<a name="configuring_logback_json"></a>
 ### Configuring Logback for JSON output
 
 Add these dependencies to your pom.xml:

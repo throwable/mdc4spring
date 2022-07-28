@@ -37,6 +37,7 @@ public class TestMDCCore {
                 .put("property1", 1)
                 .put("property2", "test")) {
             assertThat(MDC.hasCurrent()).isTrue();
+            assertThat(mdc.get("property1")).isEqualTo(1);
 
             MDC.current().put("property3", "rest");
             MDC.param("property4", "property4value");
@@ -139,13 +140,15 @@ public class TestMDCCore {
         MDC.with("component")
                 .param("param1", "value1")
                 .param("param2", "value2")
-                .run(() -> assertThat(mdcAdapter.getMap())
-                        .containsEntry("component.param1", "value1")
-                        .containsEntry("component.param2", "value2"));
+                .run(() -> {
+                    assertThat(mdcAdapter.getMap())
+                            .containsEntry("component.param1", "value1")
+                            .containsEntry("component.param2", "value2");
+                });
 
         final String result = MDC.with()
                 .param("param1", "value1")
-                .apply(() -> {
+                .run(() -> {
                     assertThat(mdcAdapter.getMap())
                             .hasSize(1)
                             .containsEntry("param1", "value1");

@@ -7,14 +7,13 @@ import java.lang.annotation.*;
 /**
  * Defines a parameter that will be added to current MDC. The parameter will be present in all log messages
  * occurred during the method invocation.
- * <p>
+ * <br><br>
  * The annotation may be set at method level, at bean level or for any of method arguments.
- * <p>
  * <h3>Annotating method arguments</h3>
  * When <code>{@literal @}MDCParam</code> annotates method argument, a new parameter will be added to current MDC
  * during the method invocation. By default, the parameter will have the argument name and the value the method invoked with.
  * Alternatively you can specify a custom name for the parameter or define an expression that performs a transformation of its original value.
- * <p>
+ * <br><br>
  * <h3>Annotating methods</h3>
  * When annotating a method with <code>{@literal @}MDCParam</code> you can define additional parameters that will be
  * included to MDC during the method invocation. For each parameter you need to specify a unique name and an expression
@@ -27,12 +26,12 @@ import java.lang.annotation.*;
  *     <li>System properties referenced by <code>#systemProperties</code> variable.</li>
  *     <li>Current class and method names with <code>#className</code> and <code>#methodName</code> variables.</li>
  * </ul>
- * <p>
+ * <br><br>
  * For more information about Spring expressions please refer to <a href="https://docs.spring.io/spring-framework/docs/current/reference/html/core.html#expressions">Spring Expression Language</a> documentation.
- * <p>
+ * <br><br>
  * <h3>Annotating beans</h3>
  * The <code>{@literal @}MDCParam</code> annotation set at bean level has the same effect as if it is applied to each method of the bean.
- * <p>
+ * <br><br>
  * <h3>Limitations</h3>
  * The library uses Spring AOP to intercept annotated method invocations so these considerations must be token into account:
  * <ul>
@@ -50,7 +49,6 @@ import java.lang.annotation.*;
  *     </ul>
  *     </li>
  * </ul>
- * <p>
  * <h3>Sample usage</h3>
  * <blockquote><pre>
  * {@literal @}MDCParam(name = "transaction.id", eval = "#order.transactionId"),
@@ -69,12 +67,14 @@ import java.lang.annotation.*;
 public @interface MDCParam {
     /**
      * Parameter name. Optional for method argument annotation, required for method and bean-level annotations.
+     * @return Parameter name
      */
     @AliasFor("value")
     String name() default "";
 
     /**
      * Parameter name. Alias for <code>name</code> attribute.
+     * @return Parameter name
      */
     @AliasFor("name")
     String value() default "";
@@ -82,6 +82,7 @@ public @interface MDCParam {
     /**
      * Expression to evaluate.
      * For more information please refer to <a href="https://docs.spring.io/spring-framework/docs/current/reference/html/core.html#expressions">Spring Expression Language</a> documentation.
+     * @return Expression to evaluate
      */
     String eval() default "";
 }
