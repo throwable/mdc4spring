@@ -8,7 +8,8 @@ on:
     branches: [ "master" ]
   pull_request:
     branches: [ "master" ]
-
+  workflow_dispatch:
+  
 jobs:
   build:
 
@@ -28,7 +29,7 @@ jobs:
         gpg-passphrase: MAVEN_GPG_PASSPHRASE
         cache: maven
     - name: Build & Publish with Maven
-      run: export GPG_TTY=$(tty) && mvn --batch-mode deploy
+      run: export GPG_TTY=$(tty) && mvn -X -debug --batch-mode deploy
       env:
         MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
         MAVEN_PASSWORD: ${{ secrets.OSSRH_TOKEN }}
