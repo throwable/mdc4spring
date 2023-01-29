@@ -96,7 +96,7 @@ Add the following dependency to your project's build file.
 
 ```xml
 <dependency>
-    <groupId>com.github.throwable.mdc4spring</groupId>
+    <groupId>io.github.throwable.mdc4spring</groupId>
     <artifactId>mdc4spring</artifactId>
     <version>1.0</version>
 </dependency>
@@ -106,7 +106,7 @@ Add the following dependency to your project's build file.
 
 ```groovy
 dependencies {
-    compile("com.github.throwable.mdc4spring:mdc4spring:1.0")
+    compile("io.github.throwable.mdc4spring:mdc4spring:1.0")
 }
 ```
 
