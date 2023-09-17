@@ -10,6 +10,11 @@ import java.util.Map;
 @FunctionalInterface
 public interface ExpressionEvaluator {
     /**
+     * When set to true (default value) the evaluation will tolerate NPEs and return null instead.
+     */
+    String TOLERATE_NPE_SYSTEM_PROPERTY = "com.github.throwable.mdc4spring.util.ExpressionEvaluator";
+
+    /**
      * Evaluate expression for an MDC parameter
      *
      * @param expression           expression string to evaluate

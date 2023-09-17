@@ -11,14 +11,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.math.BigDecimal;
-import java.util.List;
+import java.util.*;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 
 @SpringBootTest(
         properties = "sample.property=Environment property value"
 )
-public class TestAnnotatedMDCSpring {
+class TestAnnotatedMDCSpring {
     @Autowired
     SampleMDCComponent sampleMDCComponent;
     @Autowired
@@ -30,7 +31,7 @@ public class TestAnnotatedMDCSpring {
     }
 
     @Test
-    public void simpleMDC() {
+    void simpleMDC() {
         sampleMDCComponent.execWithSimpleMDC();
         List<ILoggingEvent> traces = InMemoryLoggingEventsAppender.getLoggingEvents();
         assertThat(traces).hasSize(1);
@@ -40,7 +41,7 @@ public class TestAnnotatedMDCSpring {
     }
 
     @Test
-    public void namedMDC() {
+    void namedMDC() {
         sampleMDCComponent.execWithNamedMDC();
         List<ILoggingEvent> traces = InMemoryLoggingEventsAppender.getLoggingEvents();
         assertThat(traces).hasSize(1);
@@ -50,7 +51,7 @@ public class TestAnnotatedMDCSpring {
     }
 
     @Test
-    public void nestedMDCs() {
+    void nestedMDCs() {
         sampleMDCComponent.execWithNestedMDCs();
 
         List<ILoggingEvent> traces = InMemoryLoggingEventsAppender.getLoggingEvents();
@@ -70,7 +71,7 @@ public class TestAnnotatedMDCSpring {
     }
 
     @Test
-    public void nestedMDCSameName() {
+    void nestedMDCSameName() {
         sampleMDCComponent.execWithNestedSameNameMDC();
 
         List<ILoggingEvent> traces = InMemoryLoggingEventsAppender.getLoggingEvents();
@@ -90,7 +91,7 @@ public class TestAnnotatedMDCSpring {
     }
 
     @Test
-    public void nestedBeanWithInvocationInCurrentMDC() {
+    void nestedBeanWithInvocationInCurrentMDC() {
         sampleMDCComponent.execInvocationInCurrentMDC();
         List<ILoggingEvent> traces = InMemoryLoggingEventsAppender.getLoggingEvents();
         assertThat(traces).hasSize(2);
@@ -106,7 +107,7 @@ public class TestAnnotatedMDCSpring {
     }
 
     @Test
-    public void paramMethodCallWithoutMDCDefined() {
+    void paramMethodCallWithoutMDCDefined() {
         sampleMDCComponent.execParamMethodWithoutMDC();
         List<ILoggingEvent> traces = InMemoryLoggingEventsAppender.getLoggingEvents();
         assertThat(traces).hasSize(1);
@@ -118,7 +119,7 @@ public class TestAnnotatedMDCSpring {
     }
 
     @Test
-    public void mdcWithMethodOnlyMDCParameter() {
+    void mdcWithMethodOnlyMDCParameter() {
         sampleMDCComponent.execWithMethodOnlyMDCParameter();
         List<ILoggingEvent> traces = InMemoryLoggingEventsAppender.getLoggingEvents();
         assertThat(traces).hasSize(1);
@@ -128,7 +129,7 @@ public class TestAnnotatedMDCSpring {
     }
 
     @Test
-    public void mdcWithFixedParameters() {
+    void mdcWithFixedParameters() {
         sampleMDCComponent.execWithFixedMDCParameters();
         List<ILoggingEvent> traces = InMemoryLoggingEventsAppender.getLoggingEvents();
         assertThat(traces).hasSize(1);
@@ -139,7 +140,7 @@ public class TestAnnotatedMDCSpring {
     }
 
     @Test
-    public void mdcWithParametersReferencingContext() {
+    void mdcWithParametersReferencingContext() {
         sampleMDCComponent.execWithMDCParametersReferencingContext();
         List<ILoggingEvent> traces = InMemoryLoggingEventsAppender.getLoggingEvents();
         assertThat(traces).hasSize(1);
@@ -156,7 +157,7 @@ public class TestAnnotatedMDCSpring {
 
 
     @Test
-    public void mdcMethodArgumentAsAParameter() {
+    void mdcMethodArgumentAsAParameter() {
         sampleMDCComponent.execWithMethodArgumentAsMDCParameter(
                 "Param1 value", "Param2 value");
         List<ILoggingEvent> traces = InMemoryLoggingEventsAppender.getLoggingEvents();
@@ -168,7 +169,7 @@ public class TestAnnotatedMDCSpring {
     }
 
     @Test
-    public void mdcMethodArgumentsAsParameters() {
+    void mdcMethodArgumentsAsParameters() {
         sampleMDCComponent.execWithMethodArgumentsAsMDCParameters(
                 "Param1 value", 42, new BigDecimal(65536), BigDecimal.class, "ParamNotIncluded");
         List<ILoggingEvent> traces = InMemoryLoggingEventsAppender.getLoggingEvents();
@@ -185,7 +186,7 @@ public class TestAnnotatedMDCSpring {
 
 
     @Test
-    public void beanMDCParamsMethodCall() {
+    void beanMDCParamsMethodCall() {
         beanMDCComponent.execWithBeanMDCParams();
         List<ILoggingEvent> traces = InMemoryLoggingEventsAppender.getLoggingEvents();
         assertThat(traces).hasSize(1);
@@ -197,7 +198,7 @@ public class TestAnnotatedMDCSpring {
 
 
     @Test
-    public void beanMDCWithArgumentsAsParams() {
+    void beanMDCWithArgumentsAsParams() {
         beanMDCComponent.execWithBeanMDCAndArgumentsAsParams("Value 1", "Value 2");
 
         List<ILoggingEvent> traces = InMemoryLoggingEventsAppender.getLoggingEvents();
@@ -210,7 +211,7 @@ public class TestAnnotatedMDCSpring {
     }
 
     @Test
-    public void beanParamsAndMethodParamsCombined() {
+    void beanParamsAndMethodParamsCombined() {
         beanMDCComponent.execWithBeanParamsAndMethodParamsCombined("Value 1", "Value 2");
         List<ILoggingEvent> traces = InMemoryLoggingEventsAppender.getLoggingEvents();
         assertThat(traces).hasSize(1);
@@ -223,7 +224,7 @@ public class TestAnnotatedMDCSpring {
     }
 
     @Test
-    public void beanMDCAndNestedMethodMDCCombined() {
+    void beanMDCAndNestedMethodMDCCombined() {
         beanMDCComponent.execWithBeanMDCAndNestedMethodMDCCombined("Value 1", "Value 2");
         List<ILoggingEvent> traces = InMemoryLoggingEventsAppender.getLoggingEvents();
         assertThat(traces).hasSize(1);
@@ -236,7 +237,19 @@ public class TestAnnotatedMDCSpring {
     }
 
     @Test
-    public void callsToLocalNonPublicMethods() {
+    void beanMDCNullablePathExpression() {
+        beanMDCComponent.extractParameterValue(null);
+        List<ILoggingEvent> traces = InMemoryLoggingEventsAppender.getLoggingEvents();
+        assertThat(traces).hasSize(1);
+        assertThat(traces.get(0).getMDCPropertyMap())
+                .hasSize(3)
+                .as("SpEL should tolerate null values and never throw NPEs")
+                .containsEntry("id", null);
+    }
+
+
+    @Test
+    void callsToLocalNonPublicMethods() {
         sampleMDCComponent.execLocalNonPublicMethods();
         List<ILoggingEvent> traces = InMemoryLoggingEventsAppender.getLoggingEvents();
         assertThat(traces).hasSize(3);
@@ -252,7 +265,17 @@ public class TestAnnotatedMDCSpring {
     }
 
     @Test
-    public void callsToRemoteNonPublicMethods() {
+    void callsToLocalPublicMethod() {
+        sampleMDCComponent.execLocalPublicMethod();
+        List<ILoggingEvent> traces = InMemoryLoggingEventsAppender.getLoggingEvents();
+        assertThat(traces).hasSize(1);
+        assertThat(traces.get(0).getMDCPropertyMap())
+                .as("Local calls are not instrumented by Spring AOP")
+                .isEmpty();
+    }
+
+    @Test
+    void callsToRemoteNonPublicMethods() {
         sampleMDCComponent.execRemoteNonPublicMethods();
         List<ILoggingEvent> traces = InMemoryLoggingEventsAppender.getLoggingEvents();
         assertThat(traces).hasSize(3);
@@ -268,7 +291,7 @@ public class TestAnnotatedMDCSpring {
     }
 
     @Test
-    public void returnOutputParameter() {
+    void returnOutputParameter() {
         sampleMDCComponent.returnOutputParameters();
         List<ILoggingEvent> traces = InMemoryLoggingEventsAppender.getLoggingEvents();
         assertThat(traces).hasSize(2);
@@ -281,9 +304,21 @@ public class TestAnnotatedMDCSpring {
     }
 
     @Test
-    public void returnOutputParameterWithoutScope() {
+    void returnOutputParameterWithoutScope() {
         assertThatCode(() ->
             sampleMDCComponent.returnOutputParameterWithoutScope()
         ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void returnUnnamedOutParams() {
+        sampleMDCComponent.returnOutputUnnamedParameters();
+        List<ILoggingEvent> traces = InMemoryLoggingEventsAppender.getLoggingEvents();
+        assertThat(traces).hasSize(1);
+        assertThat(traces.get(0).getMDCPropertyMap())
+                .hasSize(3)
+                .containsEntry("returnUnnamedOutParams.0", "NoName")
+                .containsEntry("returnUnnamedOutParams.1", "NoName-1")
+                .containsEntry("named", "NoName-2");
     }
 }

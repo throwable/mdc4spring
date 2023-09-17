@@ -5,9 +5,11 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.core.env.Environment;
 import org.springframework.expression.*;
 import org.springframework.expression.spel.SpelCompilerMode;
+import org.springframework.expression.spel.SpelEvaluationException;
 import org.springframework.expression.spel.SpelParserConfiguration;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
+import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 
 import java.util.Map;
@@ -20,10 +22,12 @@ public class SpelExpressionEvaluator implements ExpressionEvaluator {
     private final ExpressionParser expressionParser;
     private final Environment environment;
     private final ApplicationContext applicationContext;
+    private final boolean tolerateNPEs;
+
 
     private final BeanResolver applicationContextBeanResolver = new BeanResolver() {
         @Override
-        public Object resolve(EvaluationContext context, String beanName) {
+        public @NonNull Object resolve(@NonNull EvaluationContext context, @NonNull String beanName) {
             return applicationContext.getBean(beanName);
         }
     };
@@ -35,22 +39,23 @@ public class SpelExpressionEvaluator implements ExpressionEvaluator {
         }
 
         @Override
-        public boolean canRead(EvaluationContext context, Object target, String name) {
+        public boolean canRead(@NonNull EvaluationContext context, Object target, @NonNull String name) {
             return true;
         }
 
+        @NonNull
         @Override
-        public TypedValue read(EvaluationContext context, Object target, String name) {
+        public TypedValue read(@NonNull EvaluationContext context, Object target, @NonNull String name) {
             return new TypedValue(environment.getProperty(name));
         }
 
         @Override
-        public boolean canWrite(EvaluationContext context, Object target, String name) {
+        public boolean canWrite(@NonNull EvaluationContext context, Object target, @NonNull String name) {
             return false;
         }
 
         @Override
-        public void write(EvaluationContext context, Object target, String name, Object newValue) {
+        public void write(@NonNull EvaluationContext context, Object target, @NonNull String name, Object newValue) {
         }
     };
 
@@ -58,6 +63,7 @@ public class SpelExpressionEvaluator implements ExpressionEvaluator {
         this.environment = environment;
         this.applicationContext = applicationContext;
         this.expressionParser = new SpelExpressionParser(new SpelParserConfiguration(SpelCompilerMode.IMMEDIATE, null));
+        this.tolerateNPEs = "true".equalsIgnoreCase(System.getProperty(ExpressionEvaluator.TOLERATE_NPE_SYSTEM_PROPERTY, "true"));
     }
 
     @Override
@@ -88,6 +94,14 @@ public class SpelExpressionEvaluator implements ExpressionEvaluator {
         }
 
         expressionVariables.forEach(context::setVariable);
-        return parsedExpression.getValue(context);
+
+        try {
+            return parsedExpression.getValue(context);
+        } catch (SpelEvaluationException e) {
+            // EL1012E: Cannot index into a null value
+            if (tolerateNPEs && e.getMessage().startsWith("EL1012E:"))
+                return null;
+            throw e;
+        }
     }
 }

@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
- * A MDC implementation. Additionally, it implements an AutoCloseable interface to use in try-with-resources block.
+ * An MDC implementation. Additionally, it implements an AutoCloseable interface to use in try-with-resources block.
  */
 public class CloseableMDC implements AutoCloseable, MDC {
 
@@ -59,7 +59,7 @@ public class CloseableMDC implements AutoCloseable, MDC {
         CloseableMDC current = currentMdc.get();
         String keyPrefix = current != null ? current.namePrefix : "";
         String newKeyPrefix;
-        if (namespace != null && !"".equals(namespace))
+        if (namespace != null && !namespace.isEmpty())
             newKeyPrefix = keyPrefix + namespace + ".";
         else
             newKeyPrefix = keyPrefix;

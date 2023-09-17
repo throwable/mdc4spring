@@ -46,11 +46,15 @@ public class AnnotatedMethodMDCParamsEvaluator {
 
             for (MDCParam parameter : annotatedMethodConfig.getBeanMDCParamAnnotations()) {
                 String paramName = !parameter.name().isEmpty() ? parameter.name() : parameter.value();
-                if (paramName.isEmpty()/* || !parameter.include()*/)
+                if (paramName.isEmpty())
                     continue;
-                Object expressionResult = evaluateExpression(parameter.eval(), target, null,
-                        annotatedMethodConfig.getExpressionStaticVariables());
-                beanMDCParamValues.put(paramName, expressionResult);
+                if (!parameter.eval().isEmpty()) {
+                    Object expressionResult = evaluateExpression(parameter.eval(), target, null,
+                            annotatedMethodConfig.getExpressionStaticVariables());
+                    beanMDCParamValues.put(paramName, expressionResult);
+                } else {
+                    beanMDCParamValues.put(paramName, null);
+                }
             }
         }
 
@@ -93,11 +97,15 @@ public class AnnotatedMethodMDCParamsEvaluator {
 
             for (MDCParam parameter : annotatedMethodConfig.getMethodMDCParamAnnotations()) {
                 String paramName = !parameter.name().isEmpty() ? parameter.name() : parameter.value();
-                if (paramName.isEmpty()/* || !parameter.include()*/)
+                if (paramName.isEmpty())
                     continue;
-                Object expressionResult = evaluateExpression(parameter.eval(), target, argumentValues,
-                        annotatedMethodConfig.getExpressionStaticVariables());
-                methodMDCParamValues.put(paramName, expressionResult);
+                if (!parameter.eval().isEmpty()) {
+                    Object expressionResult = evaluateExpression(parameter.eval(), target, argumentValues,
+                            annotatedMethodConfig.getExpressionStaticVariables());
+                    methodMDCParamValues.put(paramName, expressionResult);
+                }
+                else
+                    methodMDCParamValues.put(paramName, null);
             }
         }
 
@@ -124,12 +132,23 @@ public class AnnotatedMethodMDCParamsEvaluator {
 
         if (!annotatedMethodConfig.getMethodMDCParamOutAnnotations().isEmpty()) {
             methodMDCParamOutValues = new HashMap<>(annotatedMethodConfig.getMethodMDCParamOutAnnotations().size() * 4 / 3 + 1);
+            int i = 0;
             for (MDCOutParam parameter : annotatedMethodConfig.getMethodMDCParamOutAnnotations()) {
-                if (parameter.name().isEmpty())
-                    continue;
-                Object expressionResult = evaluateExpression(parameter.eval(), result, null,
-                        annotatedMethodConfig.getExpressionStaticVariables());
-                methodMDCParamOutValues.put(parameter.name(), expressionResult);
+                String paramName = !parameter.name().isEmpty() ? parameter.name() : parameter.value();
+                if (paramName.isEmpty()) {
+                    if (annotatedMethodConfig.getMethodMDCParamAnnotations().size() == 1)
+                        paramName = method.getName();
+                    else
+                        paramName = method.getName() + "." + i++;
+                }
+
+                if (parameter.eval().isEmpty()) {
+                    methodMDCParamOutValues.put(paramName, result);
+                } else {
+                    Object expressionResult = evaluateExpression(parameter.eval(), result, null,
+                            annotatedMethodConfig.getExpressionStaticVariables());
+                    methodMDCParamOutValues.put(paramName, expressionResult);
+                }
             }
         }
         return methodMDCParamOutValues;
@@ -234,7 +253,7 @@ public class AnnotatedMethodMDCParamsEvaluator {
         private final Map<String, Integer> argumentIndexByParamName;
         private final Map<String, Object> expressionStaticVariables;
 
-        private AnnotatedMethodConfig(WithMDC beanMDCAnno, WithMDC methodMDCAnno,
+        private AnnotatedMethodConfig(@Nullable WithMDC beanMDCAnno, @Nullable WithMDC methodMDCAnno,
                                       List<MDCParam> beanMDCParamAnnotations, List<MDCParam> methodMDCParamAnnotations,
                                       List<MDCOutParam> methodMDCOutParamAnnotations,
                                       List<String> argumentNames, Map<String, MDCParam> mdcParamByArgumentName,
@@ -253,10 +272,12 @@ public class AnnotatedMethodMDCParamsEvaluator {
             }
         }
 
+        @Nullable
         public WithMDC getBeanMDCAnno() {
             return beanMDCAnno;
         }
 
+        @Nullable
         public WithMDC getMethodMDCAnno() {
             return methodMDCAnno;
         }
