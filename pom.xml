@@ -6,7 +6,7 @@
 
     <groupId>io.github.throwable.mdc4spring</groupId>
     <artifactId>mdc4spring</artifactId>
-    <version>1.1-SNAPSHOT</version>
+    <version>1.1</version>
     <name>mdc4spring</name>
     <description>Declarative Logging Mapping Diagnostic Context for Spring</description>
     <url>https://github.com/throwable/mdc4spring</url>
