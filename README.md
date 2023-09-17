@@ -1,5 +1,5 @@
 <!-- ABOUT THE PROJECT -->
-![build status](https://github.com/throwable/mdc4spring/actions/workflows/maven.yml/badge.svg)
+![build status](https://github.com/throwable/mdc4spring/actions/workflows/publish.yml/badge.svg)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.github.throwable.mdc4spring/mdc4spring/badge.svg)](https://maven-badges.herokuapp.com/maven-central/io.github.throwable.mdc4spring/mdc4spring/)
 
