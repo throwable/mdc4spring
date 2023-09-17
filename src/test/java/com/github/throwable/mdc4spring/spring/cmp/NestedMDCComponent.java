@@ -52,4 +52,11 @@ public class NestedMDCComponent {
     public String returnOutputParameterWithNestedMDC() {
         return "Mike";
     }
+
+    @MDCOutParam
+    @MDCOutParam(eval = "#this + '-1'")
+    @MDCOutParam(name = "named", eval = "#this + '-2'")
+    public String returnUnnamedOutParams() {
+        return "NoName";
+    }
 }

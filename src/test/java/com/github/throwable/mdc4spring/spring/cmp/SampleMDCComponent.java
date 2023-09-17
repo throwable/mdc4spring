@@ -120,6 +120,16 @@ public class SampleMDCComponent {
         samplePrivateMethod("private");
     }
 
+    @WithMDC
+    public void execLocalPublicMethod() {
+        samplePublicMethod("public");
+    }
+
+
+    @WithMDC
+    public void samplePublicMethod(@MDCParam String scope) {
+        log.info("Public method");
+    }
 
     @WithMDC
     void samplePackagePrivateMethod(@MDCParam String scope) {
@@ -172,5 +182,11 @@ public class SampleMDCComponent {
 
     @MDCOutParam(name = "test", eval = "'rest'")
     public void returnOutputParameterWithoutScope() {
+    }
+
+    @WithMDC
+    public void returnOutputUnnamedParameters() {
+        nestedMDCComponent.returnUnnamedOutParams();
+        log.info("unnamed out params");
     }
 }

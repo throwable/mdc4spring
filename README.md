@@ -1,5 +1,5 @@
 <!-- ABOUT THE PROJECT -->
-![build status](https://github.com/throwable/mdc4spring/actions/workflows/maven.yml/badge.svg)
+![build status](https://github.com/throwable/mdc4spring/actions/workflows/publish.yml/badge.svg)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.github.throwable.mdc4spring/mdc4spring/badge.svg)](https://maven-badges.herokuapp.com/maven-central/io.github.throwable.mdc4spring/mdc4spring/)
 
@@ -14,7 +14,7 @@ Spring AOP. Supported logging systems: Slf4J/Logback, Log4J, Log4J2.
 _Mapped Diagnostic Context_ (MDC) provides a way to enrich log traces with contextual information about the execution scope.
 Instead of including business parameters manually in each log message, we may consider as a good practice
 to provide them inside the MDC associated with the trace.
-This could be especially useful when you are using ELK stack, DataDog or any other
+This could be especially useful when you are using ELK stack, DataDog, or any other
 log aggregation system to track the execution of your business flows.
 
 Example of Logback logging trace that contains MDC with business data formatted by [JSON-based appender](#configuring-logback-for-json-output):
@@ -43,12 +43,11 @@ Example of Logback logging trace that contains MDC with business data formatted 
 
 Different logging libraries provide a way of setting MDC parameters using thread-local context that
 require a user to manually control the proper cleanup of them when the execution flow leaves the scope.
-So if one forgets to clean them properly it may later pollute log messages with outdated information or even provoke memory
+So, if one forgets to clean them properly, it may later pollute log messages with outdated information or even provoke memory
 leaks in thread-pooled environments.
 
-The idea is to use annotations that in a declarative way define method’s arguments to be included as MDC parameters
-when the method is executed, and automatically manage MDC scopes performing their correct cleanup.
-
+The idea is to use automatic MDC management by intercepting method calls specifying via annotations
+the data from method arguments to include in the context.
 
 ##### Example
 
@@ -57,18 +56,18 @@ class OrderProcessor {
     // define a new MDC that will be cleared automatically when the method returns
     @WithMDC
     public void assignToUser(
-            // add method arguments with their values to current MDC
+            // add method arguments with their values to the current MDC
             @MDCParam String orderId, @MDCParam String userId
     ) {
-        // programmatically add a new parameter to current MDC
+        // programmatically include additional parameter to the current MDC
         MDC.param("transactionId", this.getCurrentTransactionId());
 
         // business logic...
 
-        // The MDC of the log message will contain parameters: orderId, userId, transactionId 
+        // The MDC of the log message contains parameters: orderId, userId, transactionId 
         log.info("User was successfully assigned to order");
         // All these parameters defined within the scope of the method
-        //  will automatically be removed when the method returns
+        //  are automatically removed when the method returns.
     }
 }
 ```
@@ -82,15 +81,16 @@ class OrderProcessor {
 
 ### Prerequisites
 
-The library works with Java 8+ and Spring Boot or Spring Framework environments (does not rely on any specific version).
-Currently, it supports Slf4J/Logback, Log4j2 and Log4j logging systems. By default, the logging system is detected
-using classpath library resolution, but you can change this behavior setting
-```com.github.throwable.mdc4spring.loggers.LoggerMDCAdapter```
-system property to LoggerMDCAdapter implementation class.
+The library works with Java 8+ and Spring Boot (2.x, 3.x) or Spring Framework (5.x, 6.x) environments.
+Currently, it supports Slf4J/Logback, Log4j2, and Log4j logging systems.
+By default, the logging system is detected using classpath library resolution, but you can change this behavior setting
+`com.github.throwable.mdc4spring.loggers.LoggerMDCAdapter`
+system property to a desired `LoggerMDCAdapter` implementation class: 
+`Log4J2LoggerMDCAdapter`, `Log4JLoggerMDCAdapter`, `Slf4JLoggerMDCAdapter`.
 
 ### Installation
 
-Add the following dependency to your project's build file.
+Add the following dependencies to your project's build file.
 
 #### Maven
 
@@ -98,7 +98,11 @@ Add the following dependency to your project's build file.
 <dependency>
     <groupId>io.github.throwable.mdc4spring</groupId>
     <artifactId>mdc4spring</artifactId>
-    <version>1.0</version>
+    <version>1.1</version>
+</dependency>
+<dependency>
+  <groupId>org.springframework.boot</groupId>
+  <artifactId>spring-boot-starter-aop</artifactId>
 </dependency>
 ```
 
@@ -106,15 +110,32 @@ Add the following dependency to your project's build file.
 
 ```groovy
 dependencies {
-    compile("io.github.throwable.mdc4spring:mdc4spring:1.0")
+    // ...
+    implementation("io.github.throwable.mdc4spring:mdc4spring:1.0")
+    implementation("org.springframework.boot:spring-boot-starter-aop")
 }
 ```
 
 If you are using Spring Boot the configuration will be applied automatically by autoconfiguration mechanism.
-In case if you are not using Spring Boot you have to import ```com.github.throwable.mdc4spring.spring.MDCAutoConfiguration```
+In case you are not using Spring Boot you have to import `com.github.throwable.mdc4spring.spring.MDCConfiguration`
 manually.
 
-Probably you also need to configure your log subsystem to see MDC parameters in your log traces.
+In case you're <u>not using Spring Boot</u>, replace the `spring-boot-starter-aop` dependency by the Spring Framework AOP library:
+
+```xml
+<dependency>
+    <groupId>org.springframework</groupId>
+    <artifactId>spring-aspects</artifactId>
+    <version>${springframework-version}</version>
+</dependency>
+```
+```groovy
+dependencies {
+    // ...
+    implementation("org.springframework:spring-aspects:${springframework-version}")
+}
+```
+You also need to configure your logging subsystem to see MDC parameters in your log traces.
 [See an example of JSON-based appender](#configuring-logback-for-json-output). 
 
 <p align="right">(<a href="#top">back to top</a>)</p>
@@ -126,7 +147,7 @@ Probably you also need to configure your log subsystem to see MDC parameters in 
 
 #### Method argument parameters
 
-Simple usage: log messages will contain MDC with ```orderId``` and ```userId``` parameters that will automatically be removed after the method returns.
+Simple usage: log messages inside the method will contain MDC with `orderId` and `userId` parameters that will automatically be removed after the method returns.
 
 ```java
 class OrderProcessor {
@@ -138,7 +159,7 @@ class OrderProcessor {
 }
 ```
 
-By default, argument names will be used as parameter names, [see considerations](#method-argument-names), but you can also define custom names for them.
+By default, method argument names will be used as parameter names, [see considerations](#method-argument-names), but you can also define custom names for them.
 
 ```java
 class OrderProcessor {
@@ -150,9 +171,10 @@ class OrderProcessor {
 ```
 
 The value of any argument can be converted inline using [Spring expression language](https://docs.spring.io/spring-framework/docs/current/reference/html/core.html#expressions).
-In this case ```order.id``` and ```user.id``` parameters will be set to ```order.getId()``` and ```user.getId()``` respectively.
-Note that if any error occurs during the expression evaluation the execution will not be interrupted and a parameter value will 
-be set to a string like _#EVALUATION ERROR#: exception message_.
+In this case `order.id` and `user.id` parameters will be set to `order.getId()` and `user.getId()` respectively.
+If any error occurs during the expression evaluation, the execution will not be interrupted, and a parameter value will 
+contain a value like _#EVALUATION ERROR#: exception message_.
+By default, NPE errors are excluded from this case, and the `null` value is returned if any referenced object in the path is null.
 
 ```java
 class OrderProcessor {
@@ -168,8 +190,8 @@ class OrderProcessor {
 
 #### Additional parameters
 
-A set of additional MDC parameters can be defined for any method, whose values are evaluated and added to current MDC during each method execution.
-The ```eval``` attribute defines a SpEL expression that can contain references to the evaluation context.
+Also, additional MDC parameters can be defined for any method.
+In this case, the `eval` attribute should define a SpEL expression that may contain references to the current evaluation context.
 
 ```java
 class RequestProcessor {
@@ -192,19 +214,19 @@ class RequestProcessor {
 ```
 The example above contains:
 
-1. Providing parameter's value calling a static method of some class.
-2. Accessing Spring configuration property using ```#environment``` variable.
-3. Obtaining JVM system property using ```#systemProperties``` variable.
-4. Accessing a property of the local bean. The whole bean object is available in expression evaluation as ```#root``` variable.
+1. Providing a parameter value by calling a static method of some class.
+2. Accessing Spring configuration property using `#environment` variable.
+3. Obtaining JVM system property using `#systemProperties` variable.
+4. Accessing a property of the local bean. The whole bean object is available in expression evaluation as `#root` variable.
    The property may be a getter or a local field of any visibility level.
-5. All arguments are available within the expression using ```#argumentName``` variables.
-6. Variables ```#className``` and ```#methodName``` contain the fully-qualified class name and the method name respectively.
-7. Using ```@beanName``` notation you can reference any named bean within the Spring Application Context.
+5. Each method argument is available within the expression using `#argumentName` variable.
+6. Variables `#className` and `#methodName` contain the fully-qualified class name and the method name respectively.
+7. Using `@beanName` notation, you can reference any named bean within the Spring Application Context.
 
 #### MDC and the method scope
 
-```@WithMDC``` and ```@MDCParam``` annotations may also be defined at class level.
-In this case they provoke the same effect as being applied to each method.
+`@WithMDC` and `@MDCParam` annotations may also be defined at class level.
+In this case, they provoke the same effect as being applied to each method.
 
 ```java
 @WithMDC
@@ -219,22 +241,22 @@ class OrderProcessor {
 }
 ```
 
-MDC may also be named. This adds a correspondent prefix to any parameter defined within its scope.
+MDC may also be named. This adds the name as a prefix to any parameter defined within its scope.
 
 ```java
 @WithMDC("order")
 class OrderProcessor {
-    // The name of MDC parameter will be "order.id"
+    // The name of the MDC parameter will be "order.id"
     public void createOrder(@MDCParam(name = "id", eval = "id") Order order) {
     }
 }
 ```
 
-In a cascade invocations of two methods that both annotated with ```WithMDC```,
-a new 'nested' MDC will be created for the nested method invocation. 
-This MDC will contain parameters defined inside the nested method and it will be closed after the method returns
+In a cascade invocations of two methods when both annotated with `WithMDC`,
+a new 'nested' MDC is created for the nested method invocation. 
+This MDC will contain parameters defined inside the nested method, and it will be closed after the method returns
 ([see considerations](#method-invocations)).
-All parameters contained in the 'outer' MDC will remain as is in log messages.
+All parameters created in the 'outer' MDC will remain as is in log messages.
 
 ```java
 class OrderProcessor {
@@ -247,7 +269,7 @@ class OrderProcessor {
 }
 class CustomerRepository {
     // Defines a 'nested' MDC. The parameter customerId belongs to this new MDC
-    // and will be cleared after the method returns
+    //  and will be cleared after the method returns.
     @WithMDC
     public Customer findCustomerById(@MDCParam String customerId) {
         log.info("this log message will have orderId and customerId parameters defined");
@@ -255,8 +277,8 @@ class CustomerRepository {
 }
 ```
 
-Any call to a 'nested' method that defines ```@MDCParam``` but is not annotated with ```@WithMDC``` annotation
-will simply add a new parameter to the current MDC that will remain after the method returns.
+Any call to a 'nested' method that defines `@MDCParam` but is not annotated with `@WithMDC` annotation
+will simply add a new parameter to the current MDC, and it remains there after the method returns.
 
 ```java
 class OrderProcessor {
@@ -268,7 +290,7 @@ class OrderProcessor {
     }
 }
 class CustomerRepository {
-    // The parameter customerId will be added to current MDC, and will be kept after the method returns.
+    // The parameter customerId will be added to current MDC, and remains there after the method returns.
     public Customer findCustomerById(@MDCParam String customerId) {
         log.info("this log message will have orderId and customerId parameters defined");
     }
@@ -277,7 +299,7 @@ class CustomerRepository {
 
 #### Output parameters
 
-With ```@MDCOutParam``` annotation you can define an output parameter that will be added to the current MDC after the method returns.
+With `@MDCOutParam` annotation you can define an output parameter that will be added to the current MDC after the method returns.
 Its value is evaluated using the value returned by this method.
 
 ```java
@@ -361,18 +383,18 @@ The library uses Spring AOP to intercept annotated method invocations, so these 
   ```
 * Spring AOP does not intercept private methods, so if you invoke an inner bean's private method, it will have no effect on it.
 
-In both of the cases above you should define your parameters in an imperative way using ```MDC.param()```.
+In both of the cases above you should define your parameters in an imperative way using `MDC.param()`.
 
 ### Method argument names
 
-By default, Java compiler does not keep method argument names in generated bytecode, so it may cause
-possible problems with parameter name resolutions when using ```@MDCParam``` for method's arguments.
+By default, Java compiler does not keep method argument names in generated bytecode, and it may cause
+possible problems with parameter name resolutions when using `@MDCParam` for method's arguments.
 There are three ways to avoid this problem:
 
 * If you are using Spring Boot and Spring Boot Maven or Gradle plugin, the generated bytecode will already contain
   all method arguments with their names, and no additional action is required.
 * If you are not using Spring Boot plugin you may tell your compiler to preserve method argument names
-  by adding ```-parameters``` argument to ```javac``` invocation.
+  by adding `-parameters` argument to `javac` invocation.
 * You may also provide parameter names explicitly in your code:
   ```
   public User findUserById(@MDCParam("userId") String userId)
@@ -399,7 +421,7 @@ Add these dependencies to your pom.xml:
     <dependency>
         <groupId>com.fasterxml.jackson.core</groupId>
         <artifactId>jackson-databind</artifactId>
-        <version>2.13.3</version>
+        <version>2.15.1</version>
     </dependency>
 </dependencies>
 ```
@@ -437,7 +459,8 @@ Please refer to these resources:
 
 ## Roadmap
 
-- [ ] Make library working with annotated interfaces
+- [ ] Use low-level AspectJ load-time weaving instead of Spring AOP
+- [ ] Make the library working with annotated interfaces
 - [ ] Save and restore current MDC parameters to raw Map
 - [ ] Intercept @Async calls maintaining the same MDC
 - [ ] Spring WebFlux support?

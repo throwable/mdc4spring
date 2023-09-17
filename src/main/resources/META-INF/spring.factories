@@ -1,2 +1,2 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-  com.github.throwable.mdc4spring.spring.MDCAutoConfiguration
+  com.github.throwable.mdc4spring.spring.MDCConfiguration

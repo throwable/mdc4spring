@@ -4,7 +4,10 @@ import com.github.throwable.mdc4spring.anno.MDCParam;
 import com.github.throwable.mdc4spring.anno.WithMDC;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
+
+import java.util.Map;
 
 @Service
 @MDCParam(name = "environmentProperty", eval = "#environment['sample.property']")
@@ -30,5 +33,10 @@ public class BeanMDCComponent {
     @MDCParam(name = "anotherProperty", eval = "'Fixed value'")
     public void execWithBeanMDCAndNestedMethodMDCCombined(@MDCParam String param1, String sample) {
         log.info("Bean MDC with method MDC on different namespace");
+    }
+
+    @WithMDC
+    public void extractParameterValue(@MDCParam(name = "id", eval = "['id']") @Nullable Map<String, String> map) {
+        log.info("Parameter extracted");
     }
 }
