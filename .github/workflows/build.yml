@@ -6,13 +6,22 @@ on:
   pull_request:
     branches: [ "master" ]
   workflow_dispatch:
-
+    inputs:
+      BRANCH:
+        description: Branch/Tag to build
+        required: false
+        default: 'master'
+        type: string
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ inputs.BRANCH || github.ref }}
+
       - name: Set up JDK 17
         uses: actions/setup-java@v3
         with:
