@@ -28,5 +28,10 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
           cache: maven
+          gpg-private-key: ${{ secrets.OSSRH_GPG_SECRET_KEY }}
+          gpg-passphrase: MAVEN_GPG_PASSPHRASE
+
       - name: Build Library
-        run: export GPG_TTY=$(tty) && mvn verify
+        run: export GPG_TTY=$(tty) && mvn clean verify
+        env:
+          MAVEN_GPG_PASSPHRASE: ${{ secrets.OSSRH_GPG_SECRET_KEY_PASSWORD }}
